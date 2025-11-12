@@ -1,0 +1,28 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "azure-ai-inference>=1.0.0b9",
+    "flask>=3.1.2",
+    "flask-cors>=6.0.1",
+    "jinja2>=3.1.6",
+    "langchain>=1.0.3",
+    "langchain-core>=1.0.2",
+    "langchain-openai>=1.0.1",
+    "langgraph>=1.0.2",
+    "mailersend>=2.0.0",
+    "networkx>=3.5",
+    "office365-rest-python-client>=2.6.2",
+    "openai>=2.6.1",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "plotly>=6.3.1",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv>=1.2.1",
+    "resend>=2.19.0",
+    "schedule>=1.2.2",
+    "sendgrid>=6.12.5",
+    "streamlit>=1.51.0",
+]
