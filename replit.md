@@ -10,6 +10,11 @@ Fully autonomous multi-agent AI system built with Python and LangGraph that cont
 - ✅ **Dependency Management** - Using uv for Python packages, npm for Node.js packages
 - ✅ **Deployment Configuration** - VM deployment with build and run commands configured
 - ✅ **All Components Verified** - Dashboard, API, charts, and chatbot all working correctly
+- ✅ **Notification System** - Added bell icon in dashboard header showing self-healing agent decisions
+  - Real-time notification dropdown with unread count badge
+  - Displays task reallocations and timeline adjustments
+  - Auto-refreshes every 30 seconds
+  - Mark as read and clear all functionality
 
 ## Previous Changes (2025-11-04)
 - ✅ **Once-Per-Day Email Logic** - Each task gets email only ONCE per day, preventing spam
