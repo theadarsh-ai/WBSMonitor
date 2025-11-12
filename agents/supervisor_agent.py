@@ -16,6 +16,7 @@ from agents.email_generation_agent import EmailGenerationAgent
 from agents.escalation_manager_agent import EscalationManagerAgent
 from agents.dependency_tracker_agent import DependencyTrackerAgent
 from agents.plan_update_agent import PlanUpdateAgent
+from agents.self_healing_agent import SelfHealingAgent
 from utils.email_tracker import has_email_been_sent_today, mark_email_sent
 
 
@@ -24,6 +25,7 @@ class SupervisorState(TypedDict):
     messages: Sequence[BaseMessage]
     tasks: list
     categorized_tasks: dict
+    healing_results: dict
     escalation_results: dict
     dependency_analysis: dict
     updated_plan_path: str
@@ -43,6 +45,7 @@ class MasterSupervisorAgent:
         self.escalation_agent = EscalationManagerAgent()
         self.dependency_agent = DependencyTrackerAgent()
         self.plan_agent = PlanUpdateAgent()
+        self.healing_agent = SelfHealingAgent()
         
         self.workflow = self._build_workflow()
     
@@ -56,6 +59,7 @@ class MasterSupervisorAgent:
         workflow.add_node("ingest_data", self._ingest_data_node)
         workflow.add_node("analyze_risks", self._analyze_risks_node)
         workflow.add_node("track_dependencies", self._track_dependencies_node)
+        workflow.add_node("self_heal", self._self_heal_node)
         workflow.add_node("manage_escalations", self._manage_escalations_node)
         workflow.add_node("update_plan", self._update_plan_node)
         workflow.add_node("finalize", self._finalize_node)
@@ -64,7 +68,8 @@ class MasterSupervisorAgent:
         workflow.set_entry_point("ingest_data")
         workflow.add_edge("ingest_data", "analyze_risks")
         workflow.add_edge("analyze_risks", "track_dependencies")
-        workflow.add_edge("track_dependencies", "manage_escalations")
+        workflow.add_edge("track_dependencies", "self_heal")
+        workflow.add_edge("self_heal", "manage_escalations")
         workflow.add_edge("manage_escalations", "update_plan")
         workflow.add_edge("update_plan", "finalize")
         workflow.add_edge("finalize", END)
@@ -73,7 +78,7 @@ class MasterSupervisorAgent:
     
     def _ingest_data_node(self, state: SupervisorState) -> SupervisorState:
         """Node: Data Ingestion Agent."""
-        print("\n🔄 Step 1/5: Data Ingestion Agent - Fetching WBS data...")
+        print("\n🔄 Step 1/6: Data Ingestion Agent - Fetching WBS data...")
         
         try:
             tasks = self.data_agent.fetch_wbs_data()
@@ -89,7 +94,7 @@ class MasterSupervisorAgent:
     
     def _analyze_risks_node(self, state: SupervisorState) -> SupervisorState:
         """Node: Risk Analysis Agent."""
-        print("\n🔄 Step 2/5: Risk Analysis Agent - Analyzing task risks...")
+        print("\n🔄 Step 2/6: Risk Analysis Agent - Analyzing task risks...")
         
         tasks = state.get("tasks", [])
         if not tasks:
@@ -108,7 +113,7 @@ class MasterSupervisorAgent:
     
     def _track_dependencies_node(self, state: SupervisorState) -> SupervisorState:
         """Node: Dependency Tracker Agent."""
-        print("\n🔄 Step 3/5: Dependency Tracker Agent - Building dependency graph...")
+        print("\n🔄 Step 3/6: Dependency Tracker Agent - Building dependency graph...")
         
         tasks = state.get("tasks", [])
         if not tasks:
@@ -134,9 +139,38 @@ class MasterSupervisorAgent:
         
         return state
     
+    def _self_heal_node(self, state: SupervisorState) -> SupervisorState:
+        """Node: Self-Healing Agent."""
+        print("\n🔄 Step 4/6: Self-Healing Agent - Analyzing tasks for automatic healing...")
+        
+        tasks = state.get("tasks", [])
+        categorized = state.get("categorized_tasks", {})
+        
+        if not tasks or not categorized:
+            print("⚠️ No tasks to heal")
+            state["healing_results"] = {}
+            return state
+        
+        # Perform self-healing analysis and actions
+        healing_results = self.healing_agent.analyze_and_heal(tasks, categorized)
+        state["healing_results"] = healing_results
+        
+        # Update tasks in state with healed data so downstream nodes use updated info
+        state["tasks"] = tasks
+        
+        # Log healing summary
+        if healing_results.get('actions_taken'):
+            print(f"✓ Healing actions: {len(healing_results['actions_taken'])} tasks modified")
+            print(f"  - Reallocated: {healing_results['tasks_reallocated']}")
+            print(f"  - Timeline adjusted: {healing_results['timelines_adjusted']}")
+        else:
+            print("✓ No healing actions required")
+        
+        return state
+    
     def _manage_escalations_node(self, state: SupervisorState) -> SupervisorState:
         """Node: Escalation Manager Agent."""
-        print("\n🔄 Step 4/5: Escalation Manager Agent - Processing escalations...")
+        print("\n🔄 Step 5/6: Escalation Manager Agent - Processing escalations...")
         
         categorized = state.get("categorized_tasks", {})
         if not categorized:
@@ -171,7 +205,7 @@ class MasterSupervisorAgent:
     
     def _update_plan_node(self, state: SupervisorState) -> SupervisorState:
         """Node: Plan Update Agent."""
-        print("\n🔄 Step 5/5: Plan Update Agent - Updating project plan...")
+        print("\n🔄 Step 6/6: Plan Update Agent - Updating project plan...")
         
         tasks = state.get("tasks", [])
         categorized = state.get("categorized_tasks", {})
