@@ -21,6 +21,7 @@ dependencies = [
     "plotly>=6.3.1",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
     "resend>=2.19.0",
     "schedule>=1.2.2",
     "sendgrid>=6.12.5",
