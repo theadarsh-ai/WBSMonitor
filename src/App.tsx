@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import Chatbot from './Chatbot'
+import NotificationIcon from './NotificationIcon'
 import './App.css'
 
 const API_URL = ''
@@ -116,8 +117,13 @@ function App() {
     <div className="app">
       <div className="header">
         <div className="container">
-          <h1>🤖 Autonomous Project Monitoring Dashboard</h1>
-          <p>Real-time monitoring across 5 project modules with AI-powered analysis</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>🤖 Autonomous Project Monitoring Dashboard</h1>
+              <p>Real-time monitoring across 5 project modules with AI-powered analysis</p>
+            </div>
+            <NotificationIcon />
+          </div>
         </div>
       </div>
 
@@ -169,7 +175,7 @@ function App() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {riskData.map((entry, index) => (
+                  {riskData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

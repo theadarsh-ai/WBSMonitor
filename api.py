@@ -17,6 +17,7 @@ from agents.supervisor_agent import MasterSupervisorAgent
 from agents.data_ingestion_agent import DataIngestionAgent
 from agents.risk_analysis_agent import RiskAnalysisAgent
 from agents.dependency_tracker_agent import DependencyTrackerAgent
+from agents.self_healing_agent import SelfHealingAgent
 import config
 
 # Flask API
@@ -118,6 +119,46 @@ def chatbot():
         })
     except Exception as e:
         return jsonify({'error': str(e), 'response': 'Sorry, I encountered an error processing your request.'}), 500
+
+
+@app.route('/api/notifications', methods=['GET'])
+def get_notifications():
+    """Get all notifications from self-healing agent."""
+    try:
+        healing_agent = SelfHealingAgent()
+        notifications = healing_agent.get_notifications()
+        
+        unread_count = sum(1 for n in notifications if not n.get('read', False))
+        
+        return jsonify({
+            'notifications': notifications,
+            'unread_count': unread_count,
+            'total_count': len(notifications)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/notifications/<notification_id>/read', methods=['POST'])
+def mark_notification_read(notification_id):
+    """Mark a notification as read."""
+    try:
+        healing_agent = SelfHealingAgent()
+        healing_agent.mark_notification_read(notification_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/notifications/clear', methods=['POST'])
+def clear_notifications():
+    """Clear all notifications."""
+    try:
+        healing_agent = SelfHealingAgent()
+        healing_agent.clear_all_notifications()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/tasks/by-date', methods=['POST'])
