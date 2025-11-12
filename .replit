@@ -36,3 +36,8 @@ externalPort = 80
 [[ports]]
 localPort = 35183
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "vm"
+run = ["bash", "start_ui.sh"]
+build = ["sh", "-c", "uv sync && npm install && npm run build"]

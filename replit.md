@@ -3,7 +3,15 @@
 ## Project Overview
 Fully autonomous multi-agent AI system built with Python and LangGraph that continuously monitors project Work Breakdown Structure (WBS), identifies critical issues, generates automated emails, manages escalations, tracks dependencies across 5 modules, and autonomously updates project plans with zero human intervention.
 
-## Recent Changes (2025-11-04)
+## Recent Changes (2025-11-12)
+- ✅ **Replit Environment Setup** - Project configured and tested in Replit environment
+- ✅ **Separate API Script** - Created api.py for standalone Flask API server on port 3001
+- ✅ **Frontend Workflow** - Vite dev server running on port 5000 with proper host configuration
+- ✅ **Dependency Management** - Using uv for Python packages, npm for Node.js packages
+- ✅ **Deployment Configuration** - VM deployment with build and run commands configured
+- ✅ **All Components Verified** - Dashboard, API, charts, and chatbot all working correctly
+
+## Previous Changes (2025-11-04)
 - ✅ **Once-Per-Day Email Logic** - Each task gets email only ONCE per day, preventing spam
 - ✅ **End-of-Day Summary** - Daily summary report sent only at 6 PM (not every cycle)
 - ✅ **Email Tracking System** - JSON-based tracker prevents duplicate emails
@@ -95,15 +103,26 @@ Environment variables (.env):
 5. Payroll & Taxation
 
 ## Usage
-- **Production (Recommended)**: `python main.py` - Starts Flask API + 24/7 monitoring
+
+### Development Mode (Replit)
+- **Frontend + API**: `bash start_ui.sh` - Starts both Flask API (port 3001) and Vite frontend (port 5000)
+- **Frontend Only**: `npm run dev` - Vite development server
+- **API Only**: `source .pythonlibs/bin/activate && python api.py` - Flask API server
+
+### Standalone Monitoring
+- **Production**: `python main.py` - Starts Flask API + 24/7 monitoring
 - **Test mode**: `python main.py --once` - Runs single cycle
 - **Custom WBS**: `python main.py --once data/custom_wbs.xlsx`
-- **Frontend Dashboard**: Access at http://localhost:5000
+
+### Access Points
+- **Frontend Dashboard**: http://localhost:5000 (or Replit webview)
 - **API Endpoints**: http://localhost:3001/api/*
 
 ## File Structure
 ```
 ├── main.py             # Combined Flask API + Autonomous Monitoring
+├── api.py              # Standalone Flask API server (for Replit/dev)
+├── app.py              # Streamlit dashboard (alternative UI)
 ├── agents/             # Specialized AI agents
 │   ├── supervisor_agent.py      # LangGraph orchestrator
 │   ├── data_ingestion_agent.py
@@ -119,14 +138,21 @@ Environment variables (.env):
 │   ├── email_tracker.py (prevents duplicates)
 │   └── date_calculator.py
 ├── src/                # TypeScript/React frontend
-│   ├── App.tsx
-│   └── main.tsx
+│   ├── App.tsx         # Main dashboard component
+│   ├── Chatbot.tsx     # AI chatbot component
+│   ├── main.tsx        # React entry point
+│   ├── App.css         # Dashboard styles
+│   └── Chatbot.css     # Chatbot styles
 ├── data/               # Input WBS files
 │   ├── project_wbs.xlsx
 │   └── email_tracker.json (daily tracking)
 ├── reports/            # Generated updated plans
 ├── config.py           # Configuration management
-└── start_ui.sh         # UI startup script
+├── start_ui.sh         # UI startup script (Flask API + Vite frontend)
+├── package.json        # Node.js dependencies
+├── pyproject.toml      # Python dependencies (uv)
+├── vite.config.ts      # Vite configuration (port 5000, host 0.0.0.0)
+└── .pythonlibs/        # Python virtual environment (uv-managed)
 ```
 
 ## Key Features

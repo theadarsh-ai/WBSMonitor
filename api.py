@@ -377,5 +377,5 @@ Try asking me something like:
 
 
 if __name__ == "__main__":
-    print("🚀 Starting Flask API server on http://localhost:3001")
-    app.run(host='localhost', port=3001, debug=False)
+    print("🚀 Starting Flask API server on http://0.0.0.0:3001")
+    app.run(host='0.0.0.0', port=3001, debug=False)
