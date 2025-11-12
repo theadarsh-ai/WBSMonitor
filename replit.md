@@ -12,9 +12,15 @@ Fully autonomous multi-agent AI system built with Python and LangGraph that cont
 - ✅ **All Components Verified** - Dashboard, API, charts, and chatbot all working correctly
 - ✅ **Notification System** - Added bell icon in dashboard header showing self-healing agent decisions
   - Real-time notification dropdown with unread count badge
-  - Displays task reallocations and timeline adjustments
+  - Displays task reallocations only
   - Auto-refreshes every 30 seconds
   - Mark as read and clear all functionality
+- ✅ **Self-Healing Agent Updates** - Simplified to task reallocation only
+  - Removed timeline adjustment functionality (only reallocates tasks now)
+  - When a task has deadline within 3 days and < 20% completion, reassigns to team member with less workload
+  - Updates Excel file automatically with new assignment
+  - Status field shows "AUTO-REALLOCATED to [name]"
+- ✅ **Dashboard Enhancements** - Added deadline date column to Active Alerts table
 
 ## Previous Changes (2025-11-04)
 - ✅ **Once-Per-Day Email Logic** - Each task gets email only ONCE per day, preventing spam
