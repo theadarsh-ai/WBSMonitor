@@ -37,6 +37,7 @@ interface Task {
   completion_percent: number
   status: string
   days_overdue?: number
+  end_date?: string
 }
 
 const COLORS = ['#dc2626', '#f59e0b', '#fbbf24', '#10b981']
@@ -241,6 +242,7 @@ function App() {
                   <th>Module</th>
                   <th>Owner</th>
                   <th>Completion</th>
+                  <th>Deadline</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -251,6 +253,7 @@ function App() {
                     <td>{task.module}</td>
                     <td>{task.mail_id}</td>
                     <td>{task.completion_percent}%</td>
+                    <td>{task.end_date || 'N/A'}</td>
                     <td>
                       <span className="badge badge-alert">Alert</span>
                     </td>

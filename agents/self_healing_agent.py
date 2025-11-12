@@ -74,8 +74,6 @@ class SelfHealingAgent:
                     
                     if healing_action['type'] == 'reallocate':
                         healing_results['tasks_reallocated'] += 1
-                    elif healing_action['type'] == 'adjust_timeline':
-                        healing_results['timelines_adjusted'] += 1
                     
                     # Create notification
                     notification = {
@@ -98,7 +96,7 @@ class SelfHealingAgent:
             # Update Excel file with changes
             self._update_excel_file(tasks)
             
-            print(f"✓ Healing complete: {healing_results['tasks_reallocated']} reallocated, {healing_results['timelines_adjusted']} timelines adjusted")
+            print(f"✓ Healing complete: {healing_results['tasks_reallocated']} task(s) reallocated")
         else:
             print("ℹ️  No healing actions needed at this time")
         
@@ -122,7 +120,7 @@ class SelfHealingAgent:
         days_overdue = self.date_calc.days_overdue(end_date)
         days_until_deadline = -days_overdue
         
-        # Strategy 1: Reallocate task if deadline is very close and completion is very low
+        # Reallocate task if deadline is very close and completion is very low
         if days_until_deadline > 0 and days_until_deadline <= 3 and completion < 20:
             # Find team member with least workload
             new_assignee = self._find_best_assignee(task, all_tasks)
@@ -137,20 +135,6 @@ class SelfHealingAgent:
                     },
                     'notification_message': f"Task '{task.get('task_name')}' reallocated from {assigned_to} to {new_assignee} due to critical deadline"
                 }
-        
-        # Strategy 2: Adjust timeline if task is behind but has time
-        if days_until_deadline > 3 and days_until_deadline <= 7 and completion < 30:
-            new_end_date = end_date + timedelta(days=3)
-            
-            return {
-                'type': 'adjust_timeline',
-                'details': {
-                    'old_date': end_date.strftime('%Y-%m-%d') if hasattr(end_date, 'strftime') else str(end_date),
-                    'new_date': new_end_date.strftime('%Y-%m-%d'),
-                    'reason': f'Adjusted deadline to accommodate low completion ({completion}%)'
-                },
-                'notification_message': f"Timeline adjusted for '{task.get('task_name')}' - extended by 3 days"
-            }
         
         return None
     
@@ -192,17 +176,6 @@ class SelfHealingAgent:
                 # Add comment about reallocation
                 current_status = task.get('status', '')
                 task['status'] = f"AUTO-REALLOCATED to {action['details']['to']}"
-                
-                return True
-                
-            elif action['type'] == 'adjust_timeline':
-                # Update end_date
-                new_date_str = action['details']['new_date']
-                new_date = datetime.strptime(new_date_str, '%Y-%m-%d')
-                task['end_date'] = new_date
-                
-                # Add comment about timeline adjustment
-                task['status'] = f"AUTO-ADJUSTED deadline to {new_date_str}"
                 
                 return True
                 

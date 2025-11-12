@@ -65,6 +65,10 @@ def get_dashboard_data():
                 module_breakdown[module] = 0
             module_breakdown[module] += 1
         
+        # Serialize tasks to include end_date
+        critical_tasks_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('critical_escalation', [])[:10]]
+        alerts_list_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('alert', [])[:10]]
+        
         return jsonify({
             'metrics': {
                 'total_tasks': total_tasks,
@@ -75,8 +79,8 @@ def get_dashboard_data():
             },
             'risk_distribution': risk_distribution,
             'module_breakdown': module_breakdown,
-            'critical_tasks': categorized_tasks.get('critical_escalation', [])[:10],
-            'alerts_list': categorized_tasks.get('alert', [])[:10],
+            'critical_tasks': critical_tasks_serialized,
+            'alerts_list': alerts_list_serialized,
             'dependency_stats': {
                 'nodes': dep_agent.dependency_graph.number_of_nodes(),
                 'edges': dep_agent.dependency_graph.number_of_edges()
