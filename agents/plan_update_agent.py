@@ -1,5 +1,6 @@
 """
 Plan Update Agent - Updates project plans and recalculates timelines.
+Enhanced with AI-powered timeline predictions.
 """
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
@@ -9,14 +10,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.date_calculator import DateCalculator
 from utils.excel_parser import ExcelParser
+from utils.azure_ai_client import get_ai_client
 import config
 
 
 class PlanUpdateAgent:
-    """Agent responsible for updating project plans autonomously."""
+    """Agent responsible for updating project plans with AI-powered predictions."""
     
     def __init__(self):
         self.date_calc = DateCalculator()
+        self.ai_client = get_ai_client()
     
     def update_task_statuses(self, tasks: List[Dict], categorized_tasks: Dict[str, List[Dict]]) -> List[Dict]:
         """

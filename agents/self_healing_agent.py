@@ -1,5 +1,6 @@
 """
 Self-Healing Task Reallocation Agent - Automatically reallocates tasks and updates the Excel file.
+Enhanced with AI-powered resource allocation decisions.
 """
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timedelta
@@ -10,19 +11,21 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.excel_parser import ExcelParser
 from utils.date_calculator import DateCalculator
+from utils.azure_ai_client import get_ai_client
 import config
 
 
 class SelfHealingAgent:
     """
     Agent responsible for automatically reallocating tasks to prevent project delays.
-    Makes intelligent decisions about task reassignments and updates the Excel file.
+    Uses AI to make intelligent decisions about task reassignments and updates the Excel file.
     """
     
     def __init__(self):
         self.date_calc = DateCalculator()
         self.notification_file = os.path.join(config.DATA_DIR, 'healing_notifications.json')
         self.wbs_file = os.path.join(config.DATA_DIR, 'project_wbs.xlsx')
+        self.ai_client = get_ai_client()
         
     def analyze_and_heal(self, tasks: List[Dict], categorized_tasks: Dict) -> Dict:
         """

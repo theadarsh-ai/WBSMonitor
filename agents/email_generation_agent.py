@@ -1,5 +1,6 @@
 """
 Email Generation Agent - Creates professional stakeholder communications.
+Enhanced with AI for personalized, context-aware emails.
 """
 from typing import List, Dict, Optional
 from jinja2 import Template
@@ -9,13 +10,15 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.date_calculator import DateCalculator
+from utils.azure_ai_client import get_ai_client
 
 
 class EmailGenerationAgent:
-    """Agent responsible for generating professional emails."""
+    """Agent responsible for generating professional emails with AI enhancement."""
     
     def __init__(self):
         self.date_calc = DateCalculator()
+        self.ai_client = get_ai_client()
     
     def generate_escalation_email(self, task: Dict) -> Dict[str, str]:
         """
