@@ -88,7 +88,7 @@ class RiskAnalysisAgent:
             return ('on_track', f"Not due this month")
         
         # Calculate days until deadline
-        days_overdue = self.date_calc.days_overdue(end_date)
+        days_overdue = self.date_calc.days_overdue(task_end_date)
         days_until_deadline = -days_overdue
         
         # ALERT: Deadline approaching within 7 days with low completion

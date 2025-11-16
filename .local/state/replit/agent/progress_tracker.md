@@ -13,3 +13,6 @@
 [x] 13. Final verification: npm dependencies installed and project successfully running
 [x] 14. Screenshot verified: Dashboard displays all metrics, charts, and notification system
 [x] 15. Migration from Replit Agent to Replit environment complete
+[x] 16. Checked Azure/OpenAI secrets - none currently configured
+[x] 17. Documented alert classification decision logic (Critical/Active/At-Risk)
+[x] 18. Fixed LSP type error in risk_analysis_agent.py
