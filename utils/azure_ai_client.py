@@ -22,9 +22,8 @@ class AzureAIClient:
                     azure_endpoint=config.AZURE_INFERENCE_ENDPOINT,
                     api_key=config.AZURE_INFERENCE_CREDENTIAL,
                     api_version=config.AZURE_API_VERSION or "2024-02-15-preview",
-                    deployment_name=config.AZURE_DEPLOYMENT_NAME or "gpt-4",
-                    temperature=0.7,
-                    max_tokens=2000
+                    azure_deployment=config.AZURE_DEPLOYMENT_NAME or "gpt-4",
+                    temperature=0.7
                 )
                 print("✓ Azure AI client initialized successfully")
             except Exception as e:
@@ -48,7 +47,7 @@ class AzureAIClient:
         Returns:
             AI-generated response or None if unavailable
         """
-        if not self.is_available():
+        if not self.is_available() or self.llm is None:
             return None
         
         try:
@@ -58,7 +57,8 @@ class AzureAIClient:
             ]
             
             response = self.llm.invoke(messages)
-            return response.content
+            content = response.content if hasattr(response, 'content') else str(response)
+            return content if isinstance(content, str) else str(content)
         except Exception as e:
             print(f"⚠️ Azure AI error: {e}")
             return None
