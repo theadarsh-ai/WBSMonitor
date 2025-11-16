@@ -29,5 +29,67 @@
         }
       ]
     }
+  },
+  {
+    "timestamp": "2025-11-16T15:33:35.632382",
+    "results": {
+      "actions_taken": [
+        {
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "details": {
+            "from": "adarsh.arvr@gmail.com",
+            "to": "adarshprvt@gmail.com",
+            "reason": "Critical deadline in 2 days with only 10% complete"
+          },
+          "timestamp": "2025-11-16T15:33:35.631598"
+        }
+      ],
+      "tasks_reallocated": 1,
+      "timelines_adjusted": 0,
+      "notifications": [
+        {
+          "id": "heal_69_1763307215.631603",
+          "type": "self_healing",
+          "severity": "warning",
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "message": "Task 'Client to verify and validate system generated June paysheet' reallocated from adarsh.arvr@gmail.com to adarshprvt@gmail.com due to critical deadline",
+          "timestamp": "2025-11-16T15:33:35.631633",
+          "read": false
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-16T15:33:54.797863",
+    "results": {
+      "actions_taken": [
+        {
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "details": {
+            "from": "adarshprvt@gmail.com",
+            "to": "adarsh.arvr@gmail.com",
+            "reason": "Critical deadline in 2 days with only 10% complete"
+          },
+          "timestamp": "2025-11-16T15:33:54.797074"
+        }
+      ],
+      "tasks_reallocated": 1,
+      "timelines_adjusted": 0,
+      "notifications": [
+        {
+          "id": "heal_69_1763307234.797079",
+          "type": "self_healing",
+          "severity": "warning",
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "message": "Task 'Client to verify and validate system generated June paysheet' reallocated from adarshprvt@gmail.com to adarsh.arvr@gmail.com due to critical deadline",
+          "timestamp": "2025-11-16T15:33:54.797089",
+          "read": false
+        }
+      ]
+    }
   }
 ]
