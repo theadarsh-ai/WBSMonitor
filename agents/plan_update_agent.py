@@ -1,7 +1,7 @@
 """
 Plan Update Agent - Updates project plans and recalculates timelines.
 """
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 import sys
 import os
@@ -98,7 +98,7 @@ class PlanUpdateAgent:
         
         return updated_tasks
     
-    def save_updated_plan(self, tasks: List[Dict], output_path: str = None):
+    def save_updated_plan(self, tasks: List[Dict], output_path: Optional[str] = None) -> str:
         """
         Save updated project plan to Excel.
         

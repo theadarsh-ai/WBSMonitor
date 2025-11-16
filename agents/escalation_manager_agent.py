@@ -1,7 +1,7 @@
 """
 Escalation Manager Agent - Handles severity-based routing and escalation.
 """
-from typing import List, Dict
+from typing import List, Dict, Any
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,7 +28,7 @@ class EscalationManagerAgent:
                 from_email=config.EMAIL_FROM
             )
     
-    def process_escalations(self, categorized_tasks: Dict[str, List[Dict]]) -> Dict[str, any]:
+    def process_escalations(self, categorized_tasks: Dict[str, List[Dict]]) -> Dict[str, Any]:
         """
         Process all escalations and alerts, sending appropriate emails.
         Only sends each email once per day to avoid spam.
