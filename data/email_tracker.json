@@ -1,20 +1,7 @@
 {
-  "2025-11-04": [
-    "3_alert",
-    "16_alert",
-    "25_alert",
-    "40_alert",
-    "60_alert",
-    "61_alert",
-    "62_alert",
-    "67_alert"
-  ],
-  "2025-11-06": [
-    "16_alert",
-    "25_alert",
-    "40_alert",
-    "60_alert",
-    "62_alert",
-    "67_alert"
+  "2025-11-16": [
+    "28_alert",
+    "38_alert",
+    "69_alert"
   ]
 }
