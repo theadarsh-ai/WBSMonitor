@@ -91,5 +91,36 @@
         }
       ]
     }
+  },
+  {
+    "timestamp": "2025-11-16T15:39:22.068917",
+    "results": {
+      "actions_taken": [
+        {
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "details": {
+            "from": "adarsh.arvr@gmail.com",
+            "to": "adarshprvt@gmail.com",
+            "reason": "Critical deadline in 2 days with only 10% complete"
+          },
+          "timestamp": "2025-11-16T15:39:22.068211"
+        }
+      ],
+      "tasks_reallocated": 1,
+      "timelines_adjusted": 0,
+      "notifications": [
+        {
+          "id": "heal_69_1763307562.068217",
+          "type": "self_healing",
+          "severity": "warning",
+          "task_name": "Client to verify and validate system generated June paysheet",
+          "action": "reallocate",
+          "message": "Task 'Client to verify and validate system generated June paysheet' reallocated from adarsh.arvr@gmail.com to adarshprvt@gmail.com due to critical deadline",
+          "timestamp": "2025-11-16T15:39:22.068227",
+          "read": false
+        }
+      ]
+    }
   }
 ]
