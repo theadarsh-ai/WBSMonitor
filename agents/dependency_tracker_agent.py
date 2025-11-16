@@ -1,18 +1,22 @@
 """
 Dependency Tracker Agent - Tracks cross-module dependencies and impacts.
+Enhanced with AI for dependency insights and risk propagation analysis.
 """
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
 import networkx as nx
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.azure_ai_client import get_ai_client
+
 
 class DependencyTrackerAgent:
-    """Agent responsible for tracking task dependencies and impacts."""
+    """Agent responsible for tracking task dependencies with AI-powered insights."""
     
     def __init__(self):
         self.dependency_graph = nx.DiGraph()
+        self.ai_client = get_ai_client()
     
     def build_dependency_graph(self, tasks: List[Dict]):
         """
