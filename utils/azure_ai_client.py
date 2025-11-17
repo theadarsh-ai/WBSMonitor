@@ -18,9 +18,10 @@ class AzureAIClient:
         
         if config.AZURE_INFERENCE_CREDENTIAL and config.AZURE_INFERENCE_ENDPOINT:
             try:
+                from pydantic import SecretStr
                 self.llm = AzureChatOpenAI(
                     azure_endpoint=config.AZURE_INFERENCE_ENDPOINT,
-                    api_key=config.AZURE_INFERENCE_CREDENTIAL,
+                    api_key=SecretStr(config.AZURE_INFERENCE_CREDENTIAL),
                     api_version=config.AZURE_API_VERSION or "2024-02-15-preview",
                     azure_deployment=config.AZURE_DEPLOYMENT_NAME or "gpt-4",
                     temperature=0.7
