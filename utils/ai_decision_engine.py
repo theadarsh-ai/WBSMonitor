@@ -123,8 +123,8 @@ Provide a comprehensive risk assessment in JSON format."""
         if not self.ai_client.is_available():
             return self._batch_fallback(tasks)
         
-        # Process in chunks of 20 tasks for better performance
-        CHUNK_SIZE = 20
+        # Process in chunks of 10 tasks for optimal performance
+        CHUNK_SIZE = 10
         all_categorized = {
             'critical_escalation': [],
             'alert': [],
@@ -147,42 +147,38 @@ Provide a comprehensive risk assessment in JSON format."""
         """Process a single chunk of tasks with AI assessment."""
         batch_context = self._prepare_batch_context(tasks)
         
-        system_prompt = """You are an expert AI project analyst. Analyze these tasks and assign risk levels.
+        system_prompt = """Analyze tasks and assign risk levels. Return ONLY valid JSON array:
+[{"task_name": "...", "risk_level": "critical_escalation|alert|at_risk|on_track", "risk_reason": "brief"}]
 
-For EACH task, return JSON array:
-[
-    {
-        "task_id": "task identifier",
-        "task_name": "task name",
-        "risk_level": "critical_escalation|alert|at_risk|on_track",
-        "risk_reason": "brief explanation",
-        "confidence": 0.85,
-        "urgency_score": 75
-    }
-]
-
-Risk levels:
-- critical_escalation: Immediate action needed, high business impact
-- alert: Needs attention soon, potential delays
-- at_risk: Concerning trend, monitor closely
-- on_track: Progressing well
-
-Be decisive. Return ONLY the JSON array."""
+Rules:
+- critical_escalation: Urgent, high impact
+- alert: Needs attention soon
+- at_risk: Monitor closely
+- on_track: Progressing well"""
         
-        user_message = f"""Analyze these {len(tasks)} tasks:
-
-{batch_context}
-
-Return JSON array with assessment for EACH task."""
+        user_message = f"""Tasks:\n{batch_context}\n\nReturn JSON array."""
         
         try:
             import time
+            import signal
+            
             start_time = time.time()
             
-            response = self.ai_client.generate_response(system_prompt, user_message)
+            # Add timeout handler
+            def timeout_handler(signum, frame):
+                raise TimeoutError("AI request timed out")
+            
+            # Set 15 second timeout per chunk
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(15)
+            
+            try:
+                response = self.ai_client.generate_response(system_prompt, user_message)
+            finally:
+                signal.alarm(0)  # Cancel timeout
             
             elapsed = time.time() - start_time
-            print(f"⏱️ AI chunk assessment took {elapsed:.1f}s for {len(tasks)} tasks")
+            print(f"⏱️ AI chunk ({len(tasks)} tasks) took {elapsed:.1f}s")
             
             if response is None:
                 print("⚠️ AI returned None - using fallback")
@@ -223,6 +219,10 @@ Return JSON array with assessment for EACH task."""
             self._record_decision('batch_assessment', {'count': len(tasks)}, assessments)
             
             return categorized
+        
+        except TimeoutError:
+            print(f"⏱️ AI timeout after 15s - using fallback for {len(tasks)} tasks")
+            return self._categorize_chunk_fallback(tasks)
             
         except Exception as e:
             print(f"⚠️ AI chunk assessment error: {e}")

@@ -10,12 +10,16 @@ fi
 # Activate virtual environment
 source .pythonlibs/bin/activate
 
+# Kill any existing Flask processes to ensure fresh module loading
+pkill -f "python3 api.py" || true
+sleep 1
+
 # Setup cleanup trap before starting services
 trap 'echo "Shutting down..."; kill $API_PID 2>/dev/null; exit' EXIT INT TERM
 
 # Start Flask API in background
 echo "Starting Flask API on port 3001..."
-python3 api.py &
+python3 -u api.py &
 API_PID=$!
 
 # Wait for API to start
