@@ -19,6 +19,7 @@ from agents.data_ingestion_agent import DataIngestionAgent
 from agents.risk_analysis_agent import RiskAnalysisAgent
 from agents.dependency_tracker_agent import DependencyTrackerAgent
 from agents.self_healing_agent import SelfHealingAgent
+from scheduler import start_scheduler
 import config
 
 # Flask API
@@ -465,4 +466,9 @@ Try asking me something like:
 
 if __name__ == "__main__":
     print("🚀 Starting Flask API server on http://0.0.0.0:3001")
+    
+    # Start daily digest scheduler
+    scheduler = start_scheduler()
+    print(f"✅ Daily digest scheduler active - next run: {scheduler.get_next_run()}")
+    
     app.run(host='0.0.0.0', port=3001, debug=False)
