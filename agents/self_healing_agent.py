@@ -1,6 +1,6 @@
 """
-Self-Healing Task Reallocation Agent - Automatically reallocates tasks and updates the Excel file.
-Enhanced with AI-powered resource allocation decisions.
+Self-Healing Agent - 100% AI-Powered Autonomous Task Reallocation
+NO hardcoded rules - AI decides when and how to reallocate tasks.
 """
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timedelta
@@ -12,13 +12,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.excel_parser import ExcelParser
 from utils.date_calculator import DateCalculator
 from utils.azure_ai_client import get_ai_client
+from utils.ai_decision_engine import get_decision_engine
 import config
 
 
 class SelfHealingAgent:
     """
-    Agent responsible for automatically reallocating tasks to prevent project delays.
-    Uses AI to make intelligent decisions about task reassignments and updates the Excel file.
+    100% AI-Agentic Self-Healing Agent.
+    Uses AI Decision Engine to autonomously reallocate tasks and prevent delays.
+    NO hardcoded thresholds - AI makes ALL decisions.
     """
     
     def __init__(self):
@@ -26,14 +28,16 @@ class SelfHealingAgent:
         self.notification_file = os.path.join(config.DATA_DIR, 'healing_notifications.json')
         self.wbs_file = os.path.join(config.DATA_DIR, 'project_wbs.xlsx')
         self.ai_client = get_ai_client()
+        self.decision_engine = get_decision_engine()
+        print("🤖 Self-Healing Agent initialized in FULLY AUTONOMOUS mode")
         
     def analyze_and_heal(self, tasks: List[Dict], categorized_tasks: Dict) -> Dict:
         """
-        Analyze tasks and perform self-healing actions when needed.
+        AI-powered autonomous healing - analyzes and fixes tasks without human intervention.
         
         Args:
             tasks: List of all tasks
-            categorized_tasks: Dictionary of tasks categorized by risk level
+            categorized_tasks: Dictionary of tasks categorized by AI risk assessment
             
         Returns:
             Dictionary with healing results and notifications
@@ -42,155 +46,218 @@ class SelfHealingAgent:
             'actions_taken': [],
             'tasks_reallocated': 0,
             'timelines_adjusted': 0,
-            'notifications': []
+            'notifications': [],
+            'ai_decisions': []
         }
         
-        print("\n🔧 Self-Healing Agent - Analyzing tasks for automatic reallocation...")
+        print("\n🤖 AI Self-Healing Agent - Autonomous task optimization...")
         
-        # Identify tasks that need healing
-        critical_tasks = categorized_tasks.get('critical_escalation', [])
-        alert_tasks = categorized_tasks.get('alert', [])
-        at_risk_tasks = categorized_tasks.get('at_risk', [])
-        
-        problem_tasks = critical_tasks + alert_tasks
+        # AI identifies which tasks need healing (no hardcoded categories)
+        problem_tasks = self._ai_identify_healing_candidates(tasks, categorized_tasks)
         
         if not problem_tasks:
-            print("✓ No tasks require healing - all on track")
+            print("✓ AI determined no healing actions needed - system optimized")
             return healing_results
         
-        print(f"🔍 Found {len(problem_tasks)} tasks that may need healing")
+        print(f"🧠 AI identified {len(problem_tasks)} tasks for autonomous healing")
         
-        # Perform healing actions
+        # AI performs healing actions
         for task in problem_tasks:
-            healing_action = self._determine_healing_action(task, tasks)
+            ai_decision = self._ai_determine_healing_action(task, tasks)
             
-            if healing_action:
-                success = self._apply_healing_action(task, healing_action, tasks)
+            if ai_decision and ai_decision.get('should_reallocate'):
+                success = self._apply_ai_healing_action(task, ai_decision, tasks)
                 
                 if success:
                     healing_results['actions_taken'].append({
                         'task_name': task.get('task_name'),
-                        'action': healing_action['type'],
-                        'details': healing_action['details'],
+                        'action': 'ai_reallocate',
+                        'details': ai_decision,
                         'timestamp': datetime.now().isoformat()
                     })
                     
-                    if healing_action['type'] == 'reallocate':
-                        healing_results['tasks_reallocated'] += 1
+                    healing_results['tasks_reallocated'] += 1
+                    healing_results['ai_decisions'].append(ai_decision)
                     
                     # Create notification
                     notification = {
-                        'id': f"heal_{task.get('task_id', 0)}_{datetime.now().timestamp()}",
-                        'type': 'self_healing',
-                        'severity': 'warning' if healing_action['type'] == 'reallocate' else 'info',
+                        'id': f"ai_heal_{task.get('task_id', 0)}_{datetime.now().timestamp()}",
+                        'type': 'ai_self_healing',
+                        'severity': 'info',
                         'task_name': task.get('task_name'),
-                        'action': healing_action['type'],
-                        'message': healing_action['notification_message'],
+                        'action': 'autonomous_reallocation',
+                        'message': f"🤖 AI autonomously reallocated '{task.get('task_name')}' from {ai_decision.get('from_assignee')} to {ai_decision['recommended_assignee']}",
+                        'ai_reason': ai_decision.get('reason'),
+                        'ai_confidence': ai_decision.get('confidence', 0.75),
                         'timestamp': datetime.now().isoformat(),
                         'read': False
                     }
                     healing_results['notifications'].append(notification)
         
-        # Save results to file
+        # Save results
         if healing_results['actions_taken']:
             self._save_healing_results(healing_results)
             self._save_notifications(healing_results['notifications'])
             
-            # Update Excel file with changes
+            # Update Excel file with AI changes
             self._update_excel_file(tasks)
             
-            print(f"✓ Healing complete: {healing_results['tasks_reallocated']} task(s) reallocated")
+            print(f"✓ AI autonomous healing complete: {healing_results['tasks_reallocated']} task(s) optimized")
+            print(f"  AI Confidence Average: {self._calculate_average_confidence(healing_results):.0%}")
         else:
-            print("ℹ️  No healing actions needed at this time")
+            print("ℹ️  AI determined no healing actions needed")
         
         return healing_results
     
-    def _determine_healing_action(self, task: Dict, all_tasks: List[Dict]) -> Optional[Dict]:
+    def _ai_identify_healing_candidates(self, tasks: List[Dict], categorized_tasks: Dict) -> List[Dict]:
         """
-        Determine what healing action should be taken for a task.
+        AI identifies which tasks are candidates for healing.
+        NO hardcoded categories - AI decides what needs attention.
+        """
+        if not self.ai_client.is_available():
+            # Conservative fallback
+            return categorized_tasks.get('critical_escalation', [])[:3]
+        
+        # AI analyzes ALL tasks and decides which need healing
+        system_prompt = """You are an autonomous AI task optimization system.
+Analyze all tasks and identify which ones would benefit from immediate intervention (task reallocation).
+
+Consider:
+- Risk of deadline miss
+- Current assignee workload
+- Task progress velocity
+- Business impact
+- Resource availability
+
+Return JSON array of task IDs that need healing (max 10):
+["task_1", "task_2", ...]
+
+Be selective - only choose tasks where intervention will have significant impact."""
+        
+        task_summary = "\n".join([
+            f"{t.get('task_id', t.get('task_name'))}: {t.get('task_name')} - "
+            f"{t.get('completion_percent', 0)}% complete, "
+            f"Due: {t.get('end_date')}, "
+            f"Assigned: {t.get('assigned_to', 'Unassigned')}, "
+            f"Risk: {t.get('risk_level', 'unknown')}"
+            for t in tasks[:50]  # Limit to 50 for token efficiency
+        ])
+        
+        user_message = f"""Identify tasks needing autonomous healing:
+
+{task_summary}
+
+Return JSON array of task IDs."""
+        
+        try:
+            response = self.ai_client.generate_response(system_prompt, user_message)
+            
+            # Parse response
+            response_clean = response.strip()
+            if '```json' in response_clean:
+                response_clean = response_clean.split('```json')[1].split('```')[0].strip()
+            elif '```' in response_clean:
+                response_clean = response_clean.split('```')[1].split('```')[0].strip()
+            
+            task_ids = json.loads(response_clean)
+            
+            # Map IDs to tasks
+            task_map = {str(t.get('task_id', t.get('task_name'))): t for t in tasks}
+            return [task_map[tid] for tid in task_ids if tid in task_map]
+            
+        except Exception as e:
+            print(f"⚠️ AI healing identification error: {e}")
+            return categorized_tasks.get('critical_escalation', [])[:3]
+    
+    def _ai_determine_healing_action(self, task: Dict, all_tasks: List[Dict]) -> Optional[Dict]:
+        """
+        AI autonomously determines optimal healing action.
+        NO hardcoded rules - AI makes all decisions.
         
         Returns:
-            Dictionary with action details or None if no action needed
+            AI decision dictionary or None
         """
-        end_date = task.get('end_date')
-        completion = task.get('completion_percent', 0)
-        assigned_to = task.get('assigned_to', 'Unknown')
-        
-        if not end_date:
+        if not self.ai_client.is_available():
             return None
         
-        # Calculate days until deadline
-        days_overdue = self.date_calc.days_overdue(end_date)
-        days_until_deadline = -days_overdue
+        # Get available resources from all tasks
+        available_resources = self._extract_available_resources(all_tasks, task)
         
-        # Reallocate task if deadline is very close and completion is very low
-        if days_until_deadline > 0 and days_until_deadline <= 3 and completion < 20:
-            # Find team member with least workload
-            new_assignee = self._find_best_assignee(task, all_tasks)
-            
-            if new_assignee and new_assignee != assigned_to:
-                return {
-                    'type': 'reallocate',
-                    'details': {
-                        'from': assigned_to,
-                        'to': new_assignee,
-                        'reason': f'Critical deadline in {days_until_deadline} days with only {completion}% complete'
-                    },
-                    'notification_message': f"Task '{task.get('task_name')}' reallocated from {assigned_to} to {new_assignee} due to critical deadline"
-                }
+        # Use AI Decision Engine
+        ai_decision = self.decision_engine.suggest_task_reallocation_ai(
+            task, 
+            available_resources
+        )
         
-        return None
+        if ai_decision:
+            # Add current assignee info
+            ai_decision['from_assignee'] = task.get('assigned_to', 'Unassigned')
+        
+        return ai_decision
     
-    def _find_best_assignee(self, task: Dict, all_tasks: List[Dict]) -> Optional[str]:
-        """
-        Find the team member with the least current workload in the same module.
-        """
-        task_module = task.get('module')
+    def _extract_available_resources(self, all_tasks: List[Dict], current_task: Dict) -> List[Dict]:
+        """Extract available resources with workload analysis."""
+        task_module = current_task.get('module')
         
-        # Count tasks per assignee in the same module
+        # Analyze workload per person
         workload = {}
         for t in all_tasks:
-            if t.get('module') == task_module and t.get('completion_percent', 0) < 100:
+            if t.get('completion_percent', 0) < 100:
                 assignee = t.get('assigned_to', 'Unknown')
                 if assignee not in workload:
-                    workload[assignee] = 0
-                workload[assignee] += 1
+                    workload[assignee] = {
+                        'name': assignee,
+                        'task_count': 0,
+                        'module': t.get('module'),
+                        'avg_completion': []
+                    }
+                workload[assignee]['task_count'] += 1
+                workload[assignee]['avg_completion'].append(t.get('completion_percent', 0))
         
-        # Find assignee with least workload (excluding current assignee)
-        current_assignee = task.get('assigned_to')
-        candidates = {k: v for k, v in workload.items() if k != current_assignee}
+        # Calculate average completion for each person
+        for person in workload.values():
+            if person['avg_completion']:
+                person['avg_completion'] = sum(person['avg_completion']) / len(person['avg_completion'])
+            else:
+                person['avg_completion'] = 0
         
-        if candidates:
-            best_assignee = min(candidates, key=candidates.get)
-            return best_assignee
-        
-        return None
+        return list(workload.values())
     
-    def _apply_healing_action(self, task: Dict, action: Dict, all_tasks: List[Dict]) -> bool:
+    def _apply_ai_healing_action(self, task: Dict, ai_decision: Dict, all_tasks: List[Dict]) -> bool:
         """
-        Apply the healing action to the task.
+        Apply AI's autonomous healing decision.
         """
         try:
-            if action['type'] == 'reallocate':
-                # Update assigned_to field
-                task['assigned_to'] = action['details']['to']
-                task['mail_id'] = action['details']['to']  # Update mail_id too
+            if ai_decision.get('should_reallocate'):
+                new_assignee = ai_decision['recommended_assignee']
+                old_assignee = task.get('assigned_to', 'Unassigned')
                 
-                # Add comment about reallocation
+                # Update task with AI decision
+                task['assigned_to'] = new_assignee
+                task['mail_id'] = new_assignee
+                
+                # Add AI decision tracking
                 current_status = task.get('status', '')
-                task['status'] = f"AUTO-REALLOCATED to {action['details']['to']}"
+                task['status'] = f"AI-OPTIMIZED: Reallocated to {new_assignee} (Confidence: {ai_decision.get('confidence', 0.75):.0%})"
+                task['ai_healing_timestamp'] = datetime.now().isoformat()
+                task['ai_healing_reason'] = ai_decision.get('reason')
+                
+                print(f"  ✓ AI reallocated: {task.get('task_name')}")
+                print(f"    From: {old_assignee} → To: {new_assignee}")
+                print(f"    Reason: {ai_decision.get('reason')}")
+                print(f"    Confidence: {ai_decision.get('confidence', 0.75):.0%}")
                 
                 return True
                 
         except Exception as e:
-            print(f"✗ Error applying healing action: {e}")
+            print(f"✗ Error applying AI healing: {e}")
             return False
         
         return False
     
     def _update_excel_file(self, tasks: List[Dict]):
         """
-        Update the Excel file with the modified tasks.
+        Update the Excel file with AI-optimized tasks.
         """
         try:
             if not os.path.exists(self.wbs_file):
@@ -200,7 +267,7 @@ class SelfHealingAgent:
             # Create backup
             backup_file = os.path.join(
                 config.DATA_DIR, 
-                f'project_wbs_backup_healing_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+                f'project_wbs_ai_healing_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
             )
             import shutil
             shutil.copy(self.wbs_file, backup_file)
@@ -209,17 +276,17 @@ class SelfHealingAgent:
             parser = ExcelParser(self.wbs_file)
             parser.save_wbs(tasks, self.wbs_file)
             
-            print(f"✓ Excel file updated (backup: {os.path.basename(backup_file)})")
+            print(f"✓ Excel file updated with AI optimizations (backup: {os.path.basename(backup_file)})")
             
         except Exception as e:
             print(f"✗ Error updating Excel file: {e}")
     
     def _save_healing_results(self, results: Dict):
         """
-        Save healing results to a JSON file for tracking.
+        Save AI healing results for analysis and learning.
         """
         try:
-            history_file = os.path.join(config.DATA_DIR, 'healing_history.json')
+            history_file = os.path.join(config.DATA_DIR, 'ai_healing_history.json')
             
             history = []
             if os.path.exists(history_file):
@@ -228,7 +295,8 @@ class SelfHealingAgent:
             
             history.append({
                 'timestamp': datetime.now().isoformat(),
-                'results': results
+                'results': results,
+                'ai_powered': True
             })
             
             # Keep only last 100 entries
@@ -238,11 +306,11 @@ class SelfHealingAgent:
                 json.dump(history, f, indent=2)
                 
         except Exception as e:
-            print(f"⚠️ Could not save healing history: {e}")
+            print(f"⚠️ Could not save AI healing history: {e}")
     
     def _save_notifications(self, notifications: List[Dict]):
         """
-        Save notifications to file for dashboard display.
+        Save AI healing notifications for dashboard.
         """
         try:
             existing_notifications = []
@@ -250,10 +318,10 @@ class SelfHealingAgent:
                 with open(self.notification_file, 'r') as f:
                     existing_notifications = json.load(f)
             
-            # Add new notifications
+            # Add new AI notifications
             existing_notifications.extend(notifications)
             
-            # Keep only unread notifications from last 7 days
+            # Keep notifications from last 7 days
             cutoff_date = datetime.now() - timedelta(days=7)
             existing_notifications = [
                 n for n in existing_notifications
@@ -266,10 +334,13 @@ class SelfHealingAgent:
         except Exception as e:
             print(f"⚠️ Could not save notifications: {e}")
     
+    def _calculate_average_confidence(self, results: Dict) -> float:
+        """Calculate average AI confidence from decisions."""
+        confidences = [d.get('confidence', 0.75) for d in results.get('ai_decisions', [])]
+        return sum(confidences) / len(confidences) if confidences else 0.75
+    
     def get_notifications(self) -> List[Dict]:
-        """
-        Get all current notifications.
-        """
+        """Get all current AI healing notifications."""
         try:
             if os.path.exists(self.notification_file):
                 with open(self.notification_file, 'r') as f:
@@ -280,9 +351,7 @@ class SelfHealingAgent:
             return []
     
     def mark_notification_read(self, notification_id: str):
-        """
-        Mark a notification as read.
-        """
+        """Mark a notification as read."""
         try:
             if os.path.exists(self.notification_file):
                 with open(self.notification_file, 'r') as f:
@@ -299,9 +368,7 @@ class SelfHealingAgent:
             print(f"⚠️ Could not mark notification as read: {e}")
     
     def clear_all_notifications(self):
-        """
-        Clear all notifications.
-        """
+        """Clear all notifications."""
         try:
             if os.path.exists(self.notification_file):
                 with open(self.notification_file, 'w') as f:

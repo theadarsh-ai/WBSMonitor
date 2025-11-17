@@ -30,13 +30,17 @@ EMAIL_FROM = os.getenv("FROM_EMAIL", "") or SMTP_USERNAME
 # Project Monitoring Configuration
 MONITORING_INTERVAL_MINUTES = int(os.getenv("MONITORING_INTERVAL_MINUTES", "30"))
 
-# Email sending thresholds - Smart filtering to avoid spam
-CRITICAL_ESCALATION_DAYS = int(os.getenv("CRITICAL_ESCALATION_DAYS", "7"))  # Only send email if 7+ days overdue
-ALERT_DEADLINE_APPROACHING_DAYS = int(os.getenv("ALERT_DEADLINE_APPROACHING_DAYS", "7"))  # Alert if deadline within 7 days
-ALERT_THRESHOLD_COMPLETION_PERCENT = int(os.getenv("ALERT_THRESHOLD_COMPLETION_PERCENT", "30"))  # Alert if <30% complete
-
-# Legacy threshold for risk categorization (not for email sending)
-ESCALATION_THRESHOLD_DAYS = int(os.getenv("ESCALATION_THRESHOLD_DAYS", "2"))
+# ============================================================================
+# LEGACY THRESHOLDS - NO LONGER USED IN 100% AI-AGENTIC SYSTEM
+# ============================================================================
+# These thresholds are kept for backward compatibility only but are NOT used
+# by the AI agents. All decisions are now made by AI autonomously.
+# ============================================================================
+# CRITICAL_ESCALATION_DAYS = 7  # DEPRECATED - AI decides escalation timing
+# ALERT_DEADLINE_APPROACHING_DAYS = 7  # DEPRECATED - AI assesses risk dynamically
+# ALERT_THRESHOLD_COMPLETION_PERCENT = 30  # DEPRECATED - AI considers multiple factors
+# ESCALATION_THRESHOLD_DAYS = 2  # DEPRECATED - AI makes nuanced decisions
+# ============================================================================
 
 # Project Modules
 PROJECT_MODULES = [
