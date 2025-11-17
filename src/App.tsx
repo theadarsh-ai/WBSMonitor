@@ -218,8 +218,9 @@ function App() {
                   <th>Task</th>
                   <th>Module</th>
                   <th>Owner</th>
-                  <th>Completion</th>
+                  <th>Start Date</th>
                   <th>Deadline</th>
+                  <th>Completion</th>
                   <th>Days Overdue</th>
                 </tr>
               </thead>
@@ -229,8 +230,9 @@ function App() {
                     <td>{task.task_name}</td>
                     <td>{task.module}</td>
                     <td>{task.mail_id}</td>
-                    <td>{task.completion_percent}%</td>
+                    <td>{task.start_date || 'N/A'}</td>
                     <td>{task.end_date || 'N/A'}</td>
+                    <td>{task.completion_percent}%</td>
                     <td>
                       <span className="badge" style={{backgroundColor: '#7f1d1d'}}>
                         {task.days_overdue || 'N/A'} days
@@ -252,6 +254,8 @@ function App() {
                   <th>Task</th>
                   <th>Module</th>
                   <th>Owner</th>
+                  <th>Start Date</th>
+                  <th>Deadline</th>
                   <th>Completion</th>
                   <th>Status</th>
                 </tr>
@@ -262,6 +266,8 @@ function App() {
                     <td>{task.task_name}</td>
                     <td>{task.module}</td>
                     <td>{task.mail_id}</td>
+                    <td>{task.start_date || 'N/A'}</td>
+                    <td>{task.end_date || 'N/A'}</td>
                     <td>{task.completion_percent}%</td>
                     <td>
                       <span className="badge badge-critical">
@@ -284,8 +290,9 @@ function App() {
                   <th>Task</th>
                   <th>Module</th>
                   <th>Owner</th>
-                  <th>Completion</th>
+                  <th>Start Date</th>
                   <th>Deadline</th>
+                  <th>Completion</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -295,8 +302,9 @@ function App() {
                     <td>{task.task_name}</td>
                     <td>{task.module}</td>
                     <td>{task.mail_id}</td>
-                    <td>{task.completion_percent}%</td>
+                    <td>{task.start_date || 'N/A'}</td>
                     <td>{task.end_date || 'N/A'}</td>
+                    <td>{task.completion_percent}%</td>
                     <td>
                       <span className="badge badge-alert">Alert</span>
                     </td>
