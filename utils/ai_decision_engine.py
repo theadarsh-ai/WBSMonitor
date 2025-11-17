@@ -190,12 +190,24 @@ Rules:
                 'on_track': []
             }
             
-            # Map assessments back to tasks
-            task_map = {task.get('task_id') or task.get('task_name'): task for task in tasks}
+            # Map assessments back to tasks - try multiple matching strategies
+            task_map_by_id = {task.get('task_id'): task for task in tasks if task.get('task_id')}
+            task_map_by_name = {task.get('task_name'): task for task in tasks if task.get('task_name')}
             
-            for assessment in assessments:
-                task_id = assessment.get('task_id') or assessment.get('task_name')
-                task = task_map.get(task_id)
+            matched_count = 0
+            for i, assessment in enumerate(assessments):
+                # Try to find matching task
+                task_id = assessment.get('task_id')
+                task_name = assessment.get('task_name')
+                
+                task = None
+                if task_id and task_id in task_map_by_id:
+                    task = task_map_by_id[task_id]
+                elif task_name and task_name in task_map_by_name:
+                    task = task_map_by_name[task_name]
+                elif i < len(tasks):
+                    # Fallback: match by index if AI returned in same order
+                    task = tasks[i]
                 
                 if task:
                     task['risk_level'] = assessment['risk_level']
@@ -203,6 +215,11 @@ Rules:
                     task['ai_confidence'] = assessment.get('confidence', 0.75)
                     task['urgency_score'] = assessment.get('urgency_score', 50)
                     categorized[assessment['risk_level']].append(task)
+                    matched_count += 1
+                else:
+                    print(f"⚠️ Could not match assessment for: {task_name or task_id}")
+            
+            print(f"✓ Matched {matched_count}/{len(assessments)} AI assessments to tasks")
             
             # Record decision
             self._record_decision('batch_assessment', {'count': len(tasks)}, assessments)
