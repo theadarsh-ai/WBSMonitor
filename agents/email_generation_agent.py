@@ -256,14 +256,23 @@ class EmailGenerationAgent:
             </div>
         </div>
         
+        {% if critical_tasks or alert_tasks %}
+        <div style="background: #fff3cd; border: 2px solid #dc3545; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h2 style="color: #dc3545; margin-top: 0;">⚠️ TASKS REQUIRING IMMEDIATE ATTENTION ({{ immediate_attention }})</h2>
+            <p style="font-weight: bold;">The following tasks need your immediate action to prevent project delays:</p>
+        </div>
+        {% endif %}
+        
         {% if critical_tasks %}
         <div class="summary-section">
-            <h3>🔴 Critical Escalation Tasks</h3>
+            <h3>🔴 Critical Escalation Tasks ({{ critical_count }})</h3>
             <div class="task-list critical">
                 {% for task in critical_tasks %}
                 <div class="task-item">
                     <strong>{{ task.task_name }}</strong> ({{ task.module }})<br>
-                    Assigned to: {{ task.assigned_to }} | Completion: {{ task.completion_percent }}%<br>
+                    Assigned to: {{ task.assigned_to }} | Owner: {{ task.product_owner }}<br>
+                    Start: {{ task.start_date or 'N/A' }} | End: {{ task.end_date or 'N/A' }}<br>
+                    Completion: {{ task.completion_percent }}% | Days Overdue: {{ task.days_overdue or 0 }}<br>
                     <em>{{ task.risk_reason }}</em>
                 </div>
                 {% endfor %}
@@ -273,12 +282,14 @@ class EmailGenerationAgent:
         
         {% if alert_tasks %}
         <div class="summary-section">
-            <h3>🟡 Alert Tasks</h3>
+            <h3>🟡 Alert Tasks ({{ alert_count }})</h3>
             <div class="task-list alert">
                 {% for task in alert_tasks %}
                 <div class="task-item">
                     <strong>{{ task.task_name }}</strong> ({{ task.module }})<br>
-                    Assigned to: {{ task.assigned_to }} | Completion: {{ task.completion_percent }}%<br>
+                    Assigned to: {{ task.assigned_to }} | Owner: {{ task.product_owner }}<br>
+                    Start: {{ task.start_date or 'N/A' }} | End: {{ task.end_date or 'N/A' }}<br>
+                    Completion: {{ task.completion_percent }}%<br>
                     <em>{{ task.risk_reason }}</em>
                 </div>
                 {% endfor %}

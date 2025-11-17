@@ -42,15 +42,11 @@ class EscalationManagerAgent:
     def process_escalations(self, categorized_tasks: Dict[str, List[Dict]]) -> Dict[str, Any]:
         """
         AI autonomously processes escalations - decides WHAT, WHEN, and WHO.
-        NO hardcoded categories - AI makes ALL decisions.
+        NO individual emails sent - all alerts saved for daily digest at 6 PM.
         
         Returns:
             Summary of AI-driven escalations
         """
-        sent_today_count, sent_task_ids = get_emails_sent_today()
-        if sent_today_count > 0:
-            print(f"📧 {sent_today_count} emails already sent today for {len(sent_task_ids)} tasks")
-        
         results = {
             'escalations_sent': 0,
             'alerts_sent': 0,
@@ -60,7 +56,7 @@ class EscalationManagerAgent:
             'skipped_already_sent': 0
         }
         
-        print("\n🤖 AI analyzing tasks for autonomous escalation decisions...")
+        print("\n🤖 AI analyzing tasks for daily digest (no individual emails)...")
         
         # AI decides which tasks need escalation (not based on hardcoded categories)
         all_tasks = []
@@ -72,33 +68,18 @@ class EscalationManagerAgent:
             ai_decision = self._ai_should_escalate(task)
             
             if ai_decision and ai_decision.get('should_escalate'):
-                task_id = task.get('task_id', task.get('task_name', 'unknown'))
-                
-                # Check anti-spam (still respect once-per-day limit)
-                if has_email_been_sent_today(task_id, 'ai_escalation'):
-                    print(f"⏭️  AI skipping '{task['task_name']}' (already escalated today)")
-                    results['skipped_already_sent'] += 1
-                    continue
-                
-                # AI generates and sends escalation
-                success = self._send_ai_escalation(task, ai_decision)
-                
-                if success:
-                    if ai_decision['escalation_level'] in ['immediate', 'urgent']:
-                        results['escalations_sent'] += 1
-                    else:
-                        results['alerts_sent'] += 1
-                    
-                    results['ai_decisions'].append({
-                        'task': task['task_name'],
-                        'level': ai_decision['escalation_level'],
-                        'reason': ai_decision.get('reason'),
-                        'confidence': ai_decision.get('confidence', 0.75)
-                    })
-                    
-                    mark_email_sent(task_id, 'ai_escalation')
+                # Track for daily summary (NO immediate email)
+                if ai_decision['escalation_level'] in ['immediate', 'urgent']:
+                    results['escalations_sent'] += 1
                 else:
-                    results['failed'] += 1
+                    results['alerts_sent'] += 1
+                
+                results['ai_decisions'].append({
+                    'task': task['task_name'],
+                    'level': ai_decision['escalation_level'],
+                    'reason': ai_decision.get('reason'),
+                    'confidence': ai_decision.get('confidence', 0.75)
+                })
             else:
                 # AI decided not to escalate
                 if ai_decision:
@@ -107,10 +88,11 @@ class EscalationManagerAgent:
         # Print AI decision summary
         if results['ai_decisions']:
             avg_confidence = sum(d['confidence'] for d in results['ai_decisions']) / len(results['ai_decisions'])
-            print(f"\n✓ AI Escalation Summary:")
-            print(f"  - Sent: {results['escalations_sent'] + results['alerts_sent']}")
-            print(f"  - Skipped by AI: {results['skipped_by_ai']}")
+            print(f"\n✓ AI Escalation Analysis:")
+            print(f"  - Tasks for daily digest: {results['escalations_sent'] + results['alerts_sent']}")
+            print(f"  - Critical: {results['escalations_sent']}, Alerts: {results['alerts_sent']}")
             print(f"  - AI Confidence: {avg_confidence:.0%}")
+            print(f"  ℹ️  Daily digest will be sent at 6 PM")
         
         return results
     
