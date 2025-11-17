@@ -1,0 +1,41 @@
+ Step 2/6: Risk Analysis Agent - Analyzing task risks...
+🤖 AI analyzing 72 tasks autonomously...
+⏱️ AI chunk (10 tasks) took 7.5s
+✓ Matched 10/10 AI assessments to tasks
+🤖 Risk Analysis Agent initialized in FULLY AGENTIC mode
+🤖 Dependency Tracker initialized in FULLY AI-POWERED mode
+SharePoint not configured. Looking for local file...
+✓ Successfully parsed 72 tasks from WBS
+127.0.0.1 - - [17/Nov/2025 21:16:55] "GET /api/notifications HTTP/1.1" 404 -
+⏱️ AI chunk (10 tasks) took 7.0s
+✓ Matched 10/10 AI assessments to tasks
+🤖 AI Data Quality Check: The data quality risks associated with the WBS issues include potential delays in project deliverables due to the lack of progress on key tasks that are critical for client collaboration and data collection. The 0% completion status for multiple started tasks indicates a significant risk of timeline slippage and project inefficiency if not addressed promptly.
+🤖 AI analyzing 72 tasks autonomously...
+⏱️ AI chunk (10 tasks) took 6.2s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 8.3s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 15.8s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 3.8s
+✓ Matched 10/10 AI assessments to tasks
+127.0.0.1 - - [17/Nov/2025 21:17:25] "GET /api/notifications HTTP/1.1" 404 -
+⏱️ AI chunk (10 tasks) took 20.6s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 4.1s
+✓ Matched 10/10 AI assessments to tasks
+127.0.0.1 - - [17/Nov/2025 21:17:37] "GET / HTTP/1.1" 404 -
+127.0.0.1 - - [17/Nov/2025 21:17:37] "GET /favicon.ico HTTP/1.1" 404 -
+⏱️ AI chunk (10 tasks) took 23.2s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 11.1s
+✓ Matched 10/10 AI assessments to tasks
+127.0.0.1 - - [17/Nov/2025 21:17:55] "GET /api/notifications HTTP/1.1" 404 -
+⏱️ AI chunk (10 tasks) took 19.1s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (10 tasks) took 6.4s
+✓ Matched 10/10 AI assessments to tasks
+⏱️ AI chunk (2 tasks) took 1.6s
+✓ Matched 2/2 AI assessments to tasks
+✓ AI assessment complete:
+  - Overdue: 32
