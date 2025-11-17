@@ -160,22 +160,11 @@ Rules:
         
         try:
             import time
-            import signal
             
             start_time = time.time()
             
-            # Add timeout handler
-            def timeout_handler(signum, frame):
-                raise TimeoutError("AI request timed out")
-            
-            # Set 15 second timeout per chunk
-            signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(15)
-            
-            try:
-                response = self.ai_client.generate_response(system_prompt, user_message)
-            finally:
-                signal.alarm(0)  # Cancel timeout
+            # Generate AI response (no timeout in worker threads)
+            response = self.ai_client.generate_response(system_prompt, user_message)
             
             elapsed = time.time() - start_time
             print(f"⏱️ AI chunk ({len(tasks)} tasks) took {elapsed:.1f}s")
@@ -219,10 +208,6 @@ Rules:
             self._record_decision('batch_assessment', {'count': len(tasks)}, assessments)
             
             return categorized
-        
-        except TimeoutError:
-            print(f"⏱️ AI timeout after 15s - using fallback for {len(tasks)} tasks")
-            return self._categorize_chunk_fallback(tasks)
             
         except Exception as e:
             print(f"⚠️ AI chunk assessment error: {e}")
