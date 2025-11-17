@@ -171,6 +171,8 @@ Return JSON array with assessment for each task."""
             
             assessments = json.loads(response_clean)
             
+            print(f"🔍 AI returned {len(assessments)} assessments")
+            
             # Categorize tasks based on AI decisions
             categorized = {
                 'critical_escalation': [],
@@ -182,6 +184,8 @@ Return JSON array with assessment for each task."""
             # Map AI assessments back to tasks
             task_map = {task.get('task_id') or task.get('task_name'): task for task in tasks}
             
+            print(f"🔍 Task map has {len(task_map)} tasks")
+            
             for assessment in assessments:
                 task_id = assessment.get('task_id') or assessment.get('task_name')
                 task = task_map.get(task_id)
@@ -192,6 +196,8 @@ Return JSON array with assessment for each task."""
                     task['ai_confidence'] = assessment.get('confidence', 0.75)
                     task['urgency_score'] = assessment.get('urgency_score', 50)
                     categorized[assessment['risk_level']].append(task)
+                else:
+                    print(f"⚠️ Task not found in map: {task_id}")
             
             # Record batch decision
             self._record_decision('batch_assessment', {'count': len(tasks)}, assessments)
