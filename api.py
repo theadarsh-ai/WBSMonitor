@@ -9,6 +9,7 @@ from flask_cors import CORS
 import pandas as pd
 from dateutil import parser as date_parser
 from datetime import datetime
+import time
 
 # Add current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +25,13 @@ import config
 app = Flask(__name__)
 CORS(app)
 
+# Cache for AI analysis results (expires after 5 minutes)
+_dashboard_cache = {
+    'data': None,
+    'timestamp': 0,
+    'ttl': 300  # 5 minutes cache
+}
+
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -33,8 +41,26 @@ def health():
 
 @app.route('/api/dashboard-data', methods=['GET'])
 def get_dashboard_data():
-    """Get all dashboard data."""
+    """Get all dashboard data with caching for AI results."""
+    global _dashboard_cache
+    
     try:
+        current_time = time.time()
+        force_refresh = request.args.get('refresh', 'false').lower() == 'true'
+        
+        # Check if cache is valid
+        cache_valid = (
+            _dashboard_cache['data'] is not None and
+            current_time - _dashboard_cache['timestamp'] < _dashboard_cache['ttl'] and
+            not force_refresh
+        )
+        
+        if cache_valid:
+            print("✓ Serving cached dashboard data")
+            return jsonify(_dashboard_cache['data'])
+        
+        # Cache expired or refresh requested - run AI analysis
+        print("🤖 Running fresh AI analysis...")
         data_agent = DataIngestionAgent()
         risk_agent = RiskAnalysisAgent()
         dep_agent = DependencyTrackerAgent()
@@ -69,7 +95,7 @@ def get_dashboard_data():
         critical_tasks_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('critical_escalation', [])[:10]]
         alerts_list_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('alert', [])[:10]]
         
-        return jsonify({
+        result = {
             'metrics': {
                 'total_tasks': total_tasks,
                 'critical_escalations': critical,
@@ -84,9 +110,19 @@ def get_dashboard_data():
             'dependency_stats': {
                 'nodes': dep_agent.dependency_graph.number_of_nodes(),
                 'edges': dep_agent.dependency_graph.number_of_edges()
-            }
-        })
+            },
+            'cached_at': datetime.now().isoformat(),
+            'cache_expires_in': _dashboard_cache['ttl']
+        }
+        
+        # Update cache
+        _dashboard_cache['data'] = result
+        _dashboard_cache['timestamp'] = current_time
+        print(f"✓ AI analysis complete - cache updated (expires in {_dashboard_cache['ttl']}s)")
+        
+        return jsonify(result)
     except Exception as e:
+        print(f"❌ Dashboard error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
