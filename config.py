@@ -4,14 +4,24 @@ Loads environment variables and provides configuration settings.
 """
 import os
 from dotenv import load_dotenv
+from urllib.parse import unquote
 
 load_dotenv()
 
+def clean_env_value(value: str) -> str:
+    """Clean environment variable by removing quotes and URL encoding."""
+    if not value:
+        return ""
+    cleaned = value.strip().strip('"').strip("'")
+    cleaned = unquote(cleaned)
+    cleaned = cleaned.rstrip('/%22').rstrip('/"').rstrip("/")
+    return cleaned
+
 # Azure AI Configuration
-AZURE_INFERENCE_ENDPOINT = os.getenv("AZURE_INFERENCE_ENDPOINT", "")
-AZURE_INFERENCE_CREDENTIAL = os.getenv("AZURE_INFERENCE_CREDENTIAL", "")
-AZURE_DEPLOYMENT_NAME = os.getenv("AZURE_DEPLOYMENT_NAME", "")
-AZURE_API_VERSION = os.getenv("AZURE_API_VERSION", "")
+AZURE_INFERENCE_ENDPOINT = clean_env_value(os.getenv("AZURE_INFERENCE_ENDPOINT", ""))
+AZURE_INFERENCE_CREDENTIAL = clean_env_value(os.getenv("AZURE_INFERENCE_CREDENTIAL", ""))
+AZURE_DEPLOYMENT_NAME = clean_env_value(os.getenv("AZURE_DEPLOYMENT_NAME", ""))
+AZURE_API_VERSION = clean_env_value(os.getenv("AZURE_API_VERSION", ""))
 
 # SharePoint/OneDrive Configuration
 SHAREPOINT_SITE_URL = os.getenv("SHAREPOINT_SITE_URL", "")
