@@ -327,8 +327,8 @@ class AutonomousMonitoringSystem:
         print("🤖 AUTONOMOUS AGENTIC AI PROJECT MONITORING SYSTEM")
         print("="*70)
         print(f"Monitoring Interval: Every {self.monitoring_interval} minutes")
-        print(f"Escalation Threshold: {config.ESCALATION_THRESHOLD_DAYS} days overdue")
-        print(f"Alert Threshold: <{config.ALERT_THRESHOLD_COMPLETION_PERCENT}% completion")
+        print("AI-Powered Decision Making: ALL escalations decided by AI")
+        print("No Hardcoded Thresholds: AI analyzes context autonomously")
         print("="*70)
     
     def run_monitoring_cycle(self):
