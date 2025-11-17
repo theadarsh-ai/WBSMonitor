@@ -111,8 +111,8 @@ Provide a comprehensive risk assessment in JSON format."""
     
     def batch_assess_tasks_ai(self, tasks: List[Dict]) -> Dict[str, List[Dict]]:
         """
-        AI-powered batch task assessment for efficiency.
-        Analyzes multiple tasks together to identify patterns and relative priorities.
+        AI-powered batch task assessment with chunking for performance.
+        Analyzes tasks in smaller batches to avoid timeouts.
         
         Args:
             tasks: List of task dictionaries
@@ -123,17 +123,33 @@ Provide a comprehensive risk assessment in JSON format."""
         if not self.ai_client.is_available():
             return self._batch_fallback(tasks)
         
-        # Prepare batch context
+        # Process in chunks of 20 tasks for better performance
+        CHUNK_SIZE = 20
+        all_categorized = {
+            'critical_escalation': [],
+            'alert': [],
+            'at_risk': [],
+            'on_track': []
+        }
+        
+        # Process tasks in chunks
+        for i in range(0, len(tasks), CHUNK_SIZE):
+            chunk = tasks[i:i+CHUNK_SIZE]
+            chunk_result = self._assess_task_chunk(chunk)
+            
+            # Merge results
+            for category in all_categorized:
+                all_categorized[category].extend(chunk_result.get(category, []))
+        
+        return all_categorized
+    
+    def _assess_task_chunk(self, tasks: List[Dict]) -> Dict[str, List[Dict]]:
+        """Process a single chunk of tasks with AI assessment."""
         batch_context = self._prepare_batch_context(tasks)
         
-        system_prompt = """You are an expert AI project analyst performing batch risk assessment.
-Analyze ALL tasks holistically, considering:
-- Relative priorities across tasks
-- Resource constraints and dependencies
-- Timeline conflicts and bottlenecks
-- Overall project health
+        system_prompt = """You are an expert AI project analyst. Analyze these tasks and assign risk levels.
 
-For EACH task, provide a risk assessment. Return JSON array:
+For EACH task, return JSON array:
 [
     {
         "task_id": "task identifier",
@@ -142,25 +158,35 @@ For EACH task, provide a risk assessment. Return JSON array:
         "risk_reason": "brief explanation",
         "confidence": 0.85,
         "urgency_score": 75
-    },
-    ...
+    }
 ]
 
-Be decisive and actionable. Focus on tasks that need attention NOW."""
+Risk levels:
+- critical_escalation: Immediate action needed, high business impact
+- alert: Needs attention soon, potential delays
+- at_risk: Concerning trend, monitor closely
+- on_track: Progressing well
+
+Be decisive. Return ONLY the JSON array."""
         
-        user_message = f"""Analyze these {len(tasks)} project tasks and provide risk assessments:
+        user_message = f"""Analyze these {len(tasks)} tasks:
 
 {batch_context}
 
-Return JSON array with assessment for each task."""
+Return JSON array with assessment for EACH task."""
         
         try:
+            import time
+            start_time = time.time()
+            
             response = self.ai_client.generate_response(system_prompt, user_message)
             
-            # Handle None response from AI client
+            elapsed = time.time() - start_time
+            print(f"⏱️ AI chunk assessment took {elapsed:.1f}s for {len(tasks)} tasks")
+            
             if response is None:
-                print("⚠️ AI returned None - using batch fallback")
-                return self._batch_fallback(tasks)
+                print("⚠️ AI returned None - using fallback")
+                return self._categorize_chunk_fallback(tasks)
             
             # Parse AI response
             response_clean = response.strip()
@@ -171,9 +197,7 @@ Return JSON array with assessment for each task."""
             
             assessments = json.loads(response_clean)
             
-            print(f"🔍 AI returned {len(assessments)} assessments")
-            
-            # Categorize tasks based on AI decisions
+            # Categorize tasks
             categorized = {
                 'critical_escalation': [],
                 'alert': [],
@@ -181,10 +205,8 @@ Return JSON array with assessment for each task."""
                 'on_track': []
             }
             
-            # Map AI assessments back to tasks
+            # Map assessments back to tasks
             task_map = {task.get('task_id') or task.get('task_name'): task for task in tasks}
-            
-            print(f"🔍 Task map has {len(task_map)} tasks")
             
             for assessment in assessments:
                 task_id = assessment.get('task_id') or assessment.get('task_name')
@@ -196,17 +218,24 @@ Return JSON array with assessment for each task."""
                     task['ai_confidence'] = assessment.get('confidence', 0.75)
                     task['urgency_score'] = assessment.get('urgency_score', 50)
                     categorized[assessment['risk_level']].append(task)
-                else:
-                    print(f"⚠️ Task not found in map: {task_id}")
             
-            # Record batch decision
+            # Record decision
             self._record_decision('batch_assessment', {'count': len(tasks)}, assessments)
             
             return categorized
             
         except Exception as e:
-            print(f"⚠️ AI batch assessment error: {e}")
-            return self._batch_fallback(tasks)
+            print(f"⚠️ AI chunk assessment error: {e}")
+            return self._categorize_chunk_fallback(tasks)
+    
+    def _categorize_chunk_fallback(self, tasks: List[Dict]) -> Dict[str, List[Dict]]:
+        """Fallback categorization for a chunk when AI fails."""
+        return {
+            'critical_escalation': [],
+            'alert': [],
+            'at_risk': [],
+            'on_track': tasks
+        }
     
     def should_escalate_ai(self, task: Dict, recipients: List[str]) -> Dict:
         """
