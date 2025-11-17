@@ -70,6 +70,7 @@ def get_dashboard_data():
         dep_agent.build_dependency_graph(tasks)
         
         total_tasks = len(tasks)
+        overdue = len(categorized_tasks.get('overdue', []))
         critical = len(categorized_tasks.get('critical_escalation', []))
         alerts = len(categorized_tasks.get('alert', []))
         at_risk = len(categorized_tasks.get('at_risk', []))
@@ -78,6 +79,7 @@ def get_dashboard_data():
         avg_completion = sum(task.get('completion_percent', 0) for task in tasks) / total_tasks if total_tasks > 0 else 0
         
         risk_distribution = {
+            'overdue': overdue,
             'critical': critical,
             'alert': alerts,
             'at_risk': at_risk,
@@ -92,12 +94,14 @@ def get_dashboard_data():
             module_breakdown[module] += 1
         
         # Serialize tasks to include end_date
+        overdue_tasks_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('overdue', [])[:10]]
         critical_tasks_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('critical_escalation', [])[:10]]
         alerts_list_serialized = [serialize_task_for_json(task) for task in categorized_tasks.get('alert', [])[:10]]
         
         result = {
             'metrics': {
                 'total_tasks': total_tasks,
+                'overdue_tasks': overdue,
                 'critical_escalations': critical,
                 'alerts': alerts,
                 'at_risk': at_risk,
@@ -105,12 +109,14 @@ def get_dashboard_data():
             },
             'risk_distribution': risk_distribution,
             'module_breakdown': module_breakdown,
+            'overdue_tasks': overdue_tasks_serialized,
             'critical_tasks': critical_tasks_serialized,
             'alerts_list': alerts_list_serialized,
             'dependency_stats': {
                 'nodes': dep_agent.dependency_graph.number_of_nodes(),
                 'edges': dep_agent.dependency_graph.number_of_edges()
             },
+            'current_date': datetime.now().strftime('%Y-%m-%d'),
             'cached_at': datetime.now().isoformat(),
             'cache_expires_in': _dashboard_cache['ttl']
         }

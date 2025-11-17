@@ -39,7 +39,8 @@ class RiskAnalysisAgent:
                 'critical_escalation': [...],
                 'alert': [...],
                 'at_risk': [...],
-                'on_track': [...]
+                'on_track': [...],
+                'overdue': [...]  # Tasks past their end_date
             }
         """
         print(f"🤖 AI analyzing {len(tasks)} tasks autonomously...")
@@ -47,7 +48,12 @@ class RiskAnalysisAgent:
         if self.ai_client.is_available():
             # Use AI Decision Engine for batch analysis (more efficient)
             categorized = self.decision_engine.batch_assess_tasks_ai(tasks)
+            
+            # Separate overdue tasks based on current date
+            categorized = self._separate_overdue_tasks(categorized)
+            
             print(f"✓ AI assessment complete:")
+            print(f"  - Overdue: {len(categorized['overdue'])}")
             print(f"  - Critical: {len(categorized['critical_escalation'])}")
             print(f"  - Alert: {len(categorized['alert'])}")
             print(f"  - At Risk: {len(categorized['at_risk'])}")
@@ -57,6 +63,61 @@ class RiskAnalysisAgent:
             # Fallback to conservative assessment when AI unavailable
             print("⚠️ AI unavailable - using conservative fallback")
             return self._conservative_fallback(tasks)
+    
+    def _separate_overdue_tasks(self, categorized: Dict[str, List[Dict]]) -> Dict[str, List[Dict]]:
+        """
+        Separate overdue tasks from other categories based on current date.
+        Overdue tasks are those with end_date < current_date.
+        
+        Args:
+            categorized: Tasks categorized by AI
+            
+        Returns:
+            Updated categorized tasks with 'overdue' category
+        """
+        from datetime import datetime, date
+        
+        current_date = datetime.now().date()
+        overdue_tasks = []
+        
+        # Check all categories for overdue tasks
+        for category in ['critical_escalation', 'alert', 'at_risk', 'on_track']:
+            remaining_tasks = []
+            
+            for task in categorized.get(category, []):
+                end_date_str = task.get('end_date')
+                
+                # Parse end_date
+                is_overdue = False
+                if end_date_str and str(end_date_str).lower() != 'nan':
+                    try:
+                        if isinstance(end_date_str, str):
+                            task_end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                        elif isinstance(end_date_str, datetime):
+                            task_end_date = end_date_str.date()
+                        else:
+                            task_end_date = end_date_str
+                        
+                        # Check if overdue
+                        if task_end_date < current_date:
+                            is_overdue = True
+                            # Mark as overdue in the task
+                            task['is_overdue'] = True
+                            task['days_overdue'] = (current_date - task_end_date).days
+                    except (ValueError, TypeError) as e:
+                        pass  # Keep task in original category if date parsing fails
+                
+                if is_overdue:
+                    overdue_tasks.append(task)
+                else:
+                    remaining_tasks.append(task)
+            
+            categorized[category] = remaining_tasks
+        
+        # Add overdue category
+        categorized['overdue'] = overdue_tasks
+        
+        return categorized
     
     def _assess_task_risk_ai(self, task: Dict) -> Tuple[str, str, float]:
         """

@@ -9,24 +9,28 @@ const API_URL = ''
 interface DashboardData {
   metrics: {
     total_tasks: number
+    overdue_tasks: number
     critical_escalations: number
     alerts: number
     at_risk: number
     avg_completion: number
   }
   risk_distribution: {
+    overdue: number
     critical: number
     alert: number
     at_risk: number
     on_track: number
   }
   module_breakdown: Record<string, number>
+  overdue_tasks: Task[]
   critical_tasks: Task[]
   alerts_list: Task[]
   dependency_stats: {
     nodes: number
     edges: number
   }
+  current_date?: string
 }
 
 interface Task {
@@ -40,7 +44,7 @@ interface Task {
   end_date?: string
 }
 
-const COLORS = ['#dc2626', '#f59e0b', '#fbbf24', '#10b981']
+const COLORS = ['#7f1d1d', '#dc2626', '#f59e0b', '#fbbf24', '#10b981']
 
 function App() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -103,6 +107,7 @@ function App() {
   if (!data) return null
 
   const riskData = [
+    { name: 'Overdue', value: data.risk_distribution.overdue },
     { name: 'Critical', value: data.risk_distribution.critical },
     { name: 'Alert', value: data.risk_distribution.alert },
     { name: 'At Risk', value: data.risk_distribution.at_risk },
@@ -142,6 +147,10 @@ function App() {
           <div className="metric-card">
             <div className="metric-label">Total Tasks</div>
             <div className="metric-value">{data.metrics.total_tasks}</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">Overdue Tasks</div>
+            <div className="metric-value" style={{color: '#7f1d1d'}}>{data.metrics.overdue_tasks}</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Critical Escalations</div>
@@ -199,6 +208,40 @@ function App() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {data.overdue_tasks && data.overdue_tasks.length > 0 && (
+          <div className="table-card">
+            <h3 className="chart-title">⏰ Overdue Tasks</h3>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Module</th>
+                  <th>Owner</th>
+                  <th>Completion</th>
+                  <th>Deadline</th>
+                  <th>Days Overdue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.overdue_tasks.map((task, idx) => (
+                  <tr key={idx}>
+                    <td>{task.task_name}</td>
+                    <td>{task.module}</td>
+                    <td>{task.mail_id}</td>
+                    <td>{task.completion_percent}%</td>
+                    <td>{task.end_date || 'N/A'}</td>
+                    <td>
+                      <span className="badge" style={{backgroundColor: '#7f1d1d'}}>
+                        {task.days_overdue || 'N/A'} days
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {data.critical_tasks.length > 0 && (
           <div className="table-card">
@@ -266,6 +309,7 @@ function App() {
 
         <div className="chart-card">
           <h3 className="chart-title">📊 System Info</h3>
+          <p><strong>Current Date:</strong> {data.current_date || new Date().toISOString().split('T')[0]}</p>
           <p><strong>Dependency Graph:</strong> {data.dependency_stats.nodes} nodes, {data.dependency_stats.edges} edges</p>
           <p><strong>Last Update:</strong> {new Date().toLocaleString()}</p>
           <p><strong>Status:</strong> <span style={{color: '#10b981', fontWeight: 600}}>● Operational</span></p>
