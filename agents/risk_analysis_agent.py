@@ -160,7 +160,7 @@ Provide strategic risk insights and priority recommendations."""
             print(f"⚠️ AI strategic insights error: {e}")
             return None
     
-    def predict_task_outcomes_ai(self, tasks: List[Dict]) -> Dict[str, any]:
+    def predict_task_outcomes_ai(self, tasks: List[Dict]) -> Dict:
         """
         AI predicts likely outcomes for tasks.
         
