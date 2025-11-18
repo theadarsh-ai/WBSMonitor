@@ -253,8 +253,20 @@ Issue: {ai_decision.get('reason')}"""
             cc_emails=email_data.get('cc', [])
         )
     
+    def send_morning_digest(self, categorized_tasks: Dict[str, List[Dict]], 
+                           pm_email: str = "adarsh.velmurugan@verint.com") -> bool:
+        """Send AI-generated morning digest (9 AM - Overdue focus) to project manager."""
+        email_data = self.email_generator.generate_morning_digest(categorized_tasks, pm_email)
+        return self._send_email(email_data)
+    
+    def send_afternoon_digest(self, categorized_tasks: Dict[str, List[Dict]], 
+                             pm_email: str = "adarsh.velmurugan@verint.com") -> bool:
+        """Send AI-generated afternoon digest (2 PM - Risk updates) to project manager."""
+        email_data = self.email_generator.generate_afternoon_digest(categorized_tasks, pm_email)
+        return self._send_email(email_data)
+    
     def send_daily_summary(self, categorized_tasks: Dict[str, List[Dict]], 
                           pm_email: str = "adarsh.velmurugan@verint.com") -> bool:
-        """Send AI-generated daily summary to project manager."""
+        """Send AI-generated evening digest (6 PM - Full summary) to project manager."""
         email_data = self.email_generator.generate_daily_summary(categorized_tasks, pm_email)
         return self._send_email(email_data)
