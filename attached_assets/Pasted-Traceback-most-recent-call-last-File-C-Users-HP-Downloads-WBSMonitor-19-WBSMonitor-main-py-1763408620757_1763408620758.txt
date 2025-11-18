@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\main.py", line 340, in run_monitoring_cycle
+    result = self.supervisor.execute_monitoring_cycle()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\agents\supervisor_agent.py", line 288, in execute_monitoring_cycle
+    final_state = self.workflow.invoke(initial_state)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\pregel\main.py", line 3050, in invoke
+    for chunk in self.stream(
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\pregel\main.py", line 2633, in stream
+    for _ in runner.tick(
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\pregel\_runner.py", line 167, in tick
+    run_with_retry(
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\pregel\_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\_internal\_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\venv\Lib\site-packages\langgraph\_internal\_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Downloads\WBSMonitor (19)\WBSMonitor\agents\supervisor_agent.py", line 222, in _update_plan_node
+    updated_tasks = self.plan_agent.recalculate_timelines(updated_tasks)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PlanUpdateAgent' object has no attribute 'recalculate_timelines'. Did you mean: 'recalculate_timelines_ai'?
+During task with name 'update_plan' and id 'd658cbc5-4218-5bda-00e8-04a102161466'
