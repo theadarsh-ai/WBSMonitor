@@ -54,16 +54,68 @@ class EmailGenerationAgent:
             'cc': []
         }
     
-    def generate_daily_summary(self, categorized_tasks: Dict[str, List[Dict]], 
-                              pm_email: str) -> Dict[str, str]:
+    def generate_morning_digest(self, categorized_tasks: Dict[str, List[Dict]], 
+                                pm_email: str) -> Dict[str, str]:
         """
-        Generate daily PM summary report.
+        Generate morning digest (9 AM) - Focus on overdue tasks.
         
         Returns:
             Dictionary with 'subject', 'body', 'to' keys
         """
         today = datetime.now().strftime("%Y-%m-%d")
-        subject = f"Daily Project Status Summary - {today}"
+        
+        # Count overdue tasks
+        all_tasks = []
+        for tasks in categorized_tasks.values():
+            all_tasks.extend(tasks)
+        
+        overdue_tasks = [t for t in all_tasks if t.get('days_overdue', 0) > 0]
+        overdue_count = len(overdue_tasks)
+        
+        subject = f"🌅 Morning Priority: {overdue_count} Overdue Tasks Require Attention - {today}"
+        body = self._generate_morning_digest_body(overdue_tasks, categorized_tasks)
+        
+        return {
+            'subject': subject,
+            'body': body,
+            'to': [pm_email],
+            'cc': []
+        }
+    
+    def generate_afternoon_digest(self, categorized_tasks: Dict[str, List[Dict]], 
+                                   pm_email: str) -> Dict[str, str]:
+        """
+        Generate afternoon digest (2 PM) - Focus on risk updates.
+        
+        Returns:
+            Dictionary with 'subject', 'body', 'to' keys
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        critical_tasks = categorized_tasks.get('critical_escalation', [])
+        alert_tasks = categorized_tasks.get('alert', [])
+        risk_count = len(critical_tasks) + len(alert_tasks)
+        
+        subject = f"⚠️ Afternoon Risk Alert: {risk_count} Issues Detected - {today}"
+        body = self._generate_afternoon_digest_body(categorized_tasks)
+        
+        return {
+            'subject': subject,
+            'body': body,
+            'to': [pm_email],
+            'cc': []
+        }
+    
+    def generate_daily_summary(self, categorized_tasks: Dict[str, List[Dict]], 
+                              pm_email: str) -> Dict[str, str]:
+        """
+        Generate daily PM summary report (6 PM) - Full summary.
+        
+        Returns:
+            Dictionary with 'subject', 'body', 'to' keys
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        subject = f"📊 Daily Project Summary: Complete Overview - {today}"
         
         body = self._generate_summary_body(categorized_tasks)
         
@@ -334,5 +386,231 @@ class EmailGenerationAgent:
             total_tasks=total_tasks,
             completion_rate=completion_rate,
             immediate_attention=len(critical_tasks) + len(alert_tasks),
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+    
+    def _generate_morning_digest_body(self, overdue_tasks: List[Dict], 
+                                      categorized_tasks: Dict[str, List[Dict]]) -> str:
+        """Generate morning digest body HTML - Focus on overdue tasks."""
+        
+        template_str = """
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background-color: #ff6b6b; color: white; padding: 20px; }
+        .content { padding: 20px; }
+        .priority-banner { background: #ffe5e5; border: 2px solid #ff6b6b; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .task-list { background-color: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #ff6b6b; }
+        .task-item { margin: 10px 0; padding: 15px; background: white; border-left: 3px solid #ff6b6b; }
+        .stats-row { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat-box { text-align: center; padding: 15px; background: #e9ecef; border-radius: 5px; min-width: 100px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🌅 Morning Priority Digest</h2>
+        <p>{{ date }} - Start Your Day Right</p>
+    </div>
+    
+    <div class="content">
+        <div class="priority-banner">
+            <h2 style="color: #ff6b6b; margin-top: 0;">⚠️ {{ overdue_count }} OVERDUE TASKS NEED YOUR ATTENTION TODAY</h2>
+            <p style="font-size: 16px;"><strong>These tasks are past their deadline and require immediate action to minimize project impact.</strong></p>
+        </div>
+        
+        <div class="stats-row">
+            <div class="stat-box">
+                <h3 style="color: #ff6b6b;">{{ overdue_count }}</h3>
+                <p>Overdue Tasks</p>
+            </div>
+            <div class="stat-box">
+                <h3 style="color: #dc3545;">{{ critical_count }}</h3>
+                <p>Critical</p>
+            </div>
+            <div class="stat-box">
+                <h3 style="color: #ffc107;">{{ alert_count }}</h3>
+                <p>Alerts</p>
+            </div>
+        </div>
+        
+        <h3>🔴 Today's Priority Tasks (Overdue)</h3>
+        <p><strong>Take action on these tasks today to get back on track:</strong></p>
+        
+        <div class="task-list">
+            {% for task in overdue_tasks[:10] %}
+            <div class="task-item">
+                <strong style="font-size: 16px; color: #dc3545;">{{ task.task_name }}</strong><br>
+                <span style="color: #666;">Module: {{ task.module }} | Assigned: {{ task.assigned_to }}</span><br>
+                <span style="color: #666;">Due Date: {{ task.end_date }} | Completion: {{ task.completion_percent }}%</span><br>
+                <span style="background: #ffe5e5; padding: 4px 8px; border-radius: 3px; color: #dc3545; font-weight: bold;">
+                    ⏰ {{ task.days_overdue }} days overdue
+                </span><br>
+                {% if task.risk_reason %}
+                <em style="color: #666;">Issue: {{ task.risk_reason }}</em>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            {% if overdue_count > 10 %}
+            <p style="text-align: center; color: #666; margin-top: 15px;">
+                <em>... and {{ overdue_count - 10 }} more overdue tasks. See full dashboard for complete list.</em>
+            </p>
+            {% endif %}
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4>💡 Recommended Morning Actions:</h4>
+            <ul>
+                <li>Review the top 5 overdue tasks and prioritize for today</li>
+                <li>Contact task assignees to understand blockers</li>
+                <li>Reallocate resources if needed to accelerate completion</li>
+                <li>Update task progress before the afternoon check-in</li>
+            </ul>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 12px; color: #666;">
+            Next update: Afternoon Risk Alert at 2:00 PM<br>
+            This automated digest was generated by the AI Monitoring System on {{ timestamp }}.
+        </p>
+    </div>
+</body>
+</html>
+        """
+        
+        template = Template(template_str)
+        
+        critical_tasks = categorized_tasks.get('critical_escalation', [])
+        alert_tasks = categorized_tasks.get('alert', [])
+        
+        return template.render(
+            date=datetime.now().strftime("%A, %B %d, %Y"),
+            overdue_count=len(overdue_tasks),
+            critical_count=len(critical_tasks),
+            alert_count=len(alert_tasks),
+            overdue_tasks=sorted(overdue_tasks, key=lambda x: x.get('days_overdue', 0), reverse=True),
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+    
+    def _generate_afternoon_digest_body(self, categorized_tasks: Dict[str, List[Dict]]) -> str:
+        """Generate afternoon digest body HTML - Focus on risk updates."""
+        
+        template_str = """
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background-color: #ffa500; color: white; padding: 20px; }
+        .content { padding: 20px; }
+        .risk-banner { background: #fff4e5; border: 2px solid #ffa500; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .task-list { background-color: #f8f9fa; padding: 15px; margin: 10px 0; }
+        .critical { border-left: 4px solid #dc3545; }
+        .alert { border-left: 4px solid #ffc107; }
+        .task-item { margin: 10px 0; padding: 15px; background: white; }
+        .stats-row { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat-box { text-align: center; padding: 15px; background: #e9ecef; border-radius: 5px; min-width: 100px; }
+        .status-badge { padding: 4px 12px; border-radius: 3px; font-weight: bold; font-size: 12px; }
+        .critical-badge { background: #ffe5e5; color: #dc3545; }
+        .alert-badge { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>⚠️ Afternoon Risk Alert</h2>
+        <p>{{ date }} - Mid-Day Risk Assessment</p>
+    </div>
+    
+    <div class="content">
+        <div class="risk-banner">
+            <h2 style="color: #ffa500; margin-top: 0;">📊 {{ risk_count }} TASKS REQUIRE ATTENTION</h2>
+            <p style="font-size: 16px;"><strong>AI has detected the following risks and issues that emerged or escalated since this morning.</strong></p>
+        </div>
+        
+        <div class="stats-row">
+            <div class="stat-box">
+                <h3 style="color: #dc3545;">{{ critical_count }}</h3>
+                <p>Critical Issues</p>
+            </div>
+            <div class="stat-box">
+                <h3 style="color: #ffc107;">{{ alert_count }}</h3>
+                <p>Active Alerts</p>
+            </div>
+            <div class="stat-box">
+                <h3 style="color: #fd7e14;">{{ at_risk_count }}</h3>
+                <p>At Risk</p>
+            </div>
+        </div>
+        
+        {% if critical_tasks %}
+        <h3>🔴 Critical Escalations ({{ critical_count }})</h3>
+        <p><strong>These tasks have reached critical status and need immediate intervention:</strong></p>
+        <div class="task-list critical">
+            {% for task in critical_tasks %}
+            <div class="task-item">
+                <span class="status-badge critical-badge">CRITICAL</span><br>
+                <strong style="font-size: 16px; color: #dc3545;">{{ task.task_name }}</strong><br>
+                <span style="color: #666;">Module: {{ task.module }} | Assigned: {{ task.assigned_to }}</span><br>
+                <span style="color: #666;">Due: {{ task.end_date }} | Completion: {{ task.completion_percent }}%</span><br>
+                {% if task.risk_reason %}
+                <em style="color: #dc3545;">⚠️ {{ task.risk_reason }}</em>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if alert_tasks %}
+        <h3>🟡 Active Alerts ({{ alert_count }})</h3>
+        <p><strong>These tasks are showing warning signs and need monitoring:</strong></p>
+        <div class="task-list alert">
+            {% for task in alert_tasks %}
+            <div class="task-item">
+                <span class="status-badge alert-badge">ALERT</span><br>
+                <strong style="font-size: 16px;">{{ task.task_name }}</strong><br>
+                <span style="color: #666;">Module: {{ task.module }} | Assigned: {{ task.assigned_to }}</span><br>
+                <span style="color: #666;">Due: {{ task.end_date }} | Completion: {{ task.completion_percent }}%</span><br>
+                {% if task.risk_reason %}
+                <em style="color: #856404;">{{ task.risk_reason }}</em>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div style="background: #e7f3ff; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #007bff;">
+            <h4>🎯 Recommended Afternoon Actions:</h4>
+            <ul>
+                <li>Address critical issues before end of day</li>
+                <li>Schedule urgent meetings with stakeholders for critical tasks</li>
+                <li>Review alert tasks and implement preventive measures</li>
+                <li>Update project status for transparency</li>
+            </ul>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 12px; color: #666;">
+            Next update: Full Daily Summary at 6:00 PM<br>
+            This automated digest was generated by the AI Monitoring System on {{ timestamp }}.
+        </p>
+    </div>
+</body>
+</html>
+        """
+        
+        template = Template(template_str)
+        
+        critical_tasks = categorized_tasks.get('critical_escalation', [])
+        alert_tasks = categorized_tasks.get('alert', [])
+        at_risk_tasks = categorized_tasks.get('at_risk', [])
+        
+        return template.render(
+            date=datetime.now().strftime("%A, %B %d, %Y"),
+            risk_count=len(critical_tasks) + len(alert_tasks),
+            critical_count=len(critical_tasks),
+            alert_count=len(alert_tasks),
+            at_risk_count=len(at_risk_tasks),
+            critical_tasks=critical_tasks,
+            alert_tasks=alert_tasks,
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
