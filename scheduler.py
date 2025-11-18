@@ -77,7 +77,7 @@ class DailyDigestScheduler:
     def get_next_run(self):
         """Get next scheduled run time."""
         jobs = schedule.get_jobs()
-        if jobs:
+        if jobs and jobs[0].next_run:
             next_run = jobs[0].next_run
             return next_run.strftime('%Y-%m-%d %H:%M:%S')
         return "No jobs scheduled"

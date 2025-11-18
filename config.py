@@ -36,6 +36,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 EMAIL_FROM = os.getenv("FROM_EMAIL", "") or SMTP_USERNAME
+PM_EMAIL = os.getenv("PM_EMAIL", "adarsh.velmurugan@verint.com")
 
 # Project Monitoring Configuration
 MONITORING_INTERVAL_MINUTES = int(os.getenv("MONITORING_INTERVAL_MINUTES", "30"))

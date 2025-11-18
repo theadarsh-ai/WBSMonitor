@@ -208,6 +208,11 @@ Issue: {ai_decision.get('reason')}"""
         try:
             response = self.ai_client.generate_response(system_prompt, task_details)
             
+            # Check if response is None
+            if not response:
+                print("⚠️ AI returned no response")
+                return self.email_generator.generate_alert_email(task)
+            
             # Parse JSON
             import json
             response_clean = response.strip()
